@@ -1,0 +1,488 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  TUTOR
+  STUDENT
+}
+
+enum InstituteStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum LessonType {
+  VIDEO
+  PDF
+  QUIZ
+  ASSIGNMENT
+  LIVE
+}
+
+enum PaymentStatus {
+  PENDING
+  CAPTURED
+  FAILED
+  REFUNDED
+}
+
+enum SubscriptionPaymentStatus {
+  PENDING
+  CAPTURED
+  FAILED
+  REFUNDED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FLAT
+}
+
+enum PracticeModuleType {
+  CASE_DRAFTING
+  CONTRACT_DRAFTING
+  CLIENT_INTERVIEW
+  COURTROOM_ARGUMENT
+}
+
+enum NotificationType {
+  ENROLLMENT
+  ASSIGNMENT_GRADED
+  DOUBT_ANSWERED
+  LIVE_CLASS_REMINDER
+  CERTIFICATE_ISSUED
+  ANNOUNCEMENT
+}
+
+// ─── Platform ─────────────────────────────────────────────────────────────────
+
+model Plan {
+  id            String   @id @default(uuid())
+  name          String   @unique
+  maxStudents   Int
+  maxCourses    Int
+  maxTutors     Int
+  priceMonthly  Decimal  @db.Decimal(10, 2)
+  features      Json
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  institutes           Institute[]
+  subscriptionPayments SubscriptionPayment[]
+}
+
+model Institute {
+  id           String          @id @default(uuid())
+  name         String
+  subdomain    String          @unique
+  logoUrl      String?
+  primaryColor String?         @default("#7367F0")
+  phone        String?
+  region       String?
+  planId       String
+  plan         Plan            @relation(fields: [planId], references: [id])
+  status       InstituteStatus @default(TRIAL)
+  trialEndsAt  DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  users                User[]
+  courses              Course[]
+  coupons              Coupon[]
+  liveClasses          LiveClass[]
+  scenarios            PracticeScenario[]
+  announcements        Announcement[]
+  subscriptionPayments SubscriptionPayment[]
+}
+
+// ─── Users ────────────────────────────────────────────────────────────────────
+
+model User {
+  id           String     @id @default(uuid())
+  instituteId  String?
+  institute    Institute? @relation(fields: [instituteId], references: [id])
+  email        String     @unique
+  passwordHash String
+  name         String
+  avatarUrl    String?
+  role         Role
+  isActive     Boolean    @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  taughtCourses       Course[]               @relation("TutorCourses")
+  liveClasses         LiveClass[]            @relation("TutorLiveClasses")
+  enrollments         Enrollment[]
+  quizAttempts        QuizAttempt[]
+  submissions         AssignmentSubmission[]
+  doubtsAsked         Doubt[]                @relation("StudentDoubts")
+  doubtsAnswered      Doubt[]                @relation("TutorAnswers")
+  notifications       Notification[]
+  practiceSubmissions PracticeSubmission[]
+  payments            Payment[]
+}
+
+// ─── Courses ──────────────────────────────────────────────────────────────────
+
+model Course {
+  id            String       @id @default(uuid())
+  instituteId   String
+  institute     Institute    @relation(fields: [instituteId], references: [id])
+  tutorId       String
+  tutor         User         @relation("TutorCourses", fields: [tutorId], references: [id])
+  title         String
+  description   String       @db.Text
+  thumbnailUrl  String?
+  price         Decimal      @db.Decimal(10, 2)
+  category      String
+  status        CourseStatus @default(DRAFT)
+  totalDuration Int?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  modules     Module[]
+  enrollments Enrollment[]
+  liveClasses LiveClass[]
+  doubts      Doubt[]
+  payments    Payment[]
+
+  @@index([instituteId, status])
+}
+
+model Module {
+  id         String   @id @default(uuid())
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title      String
+  orderIndex Int
+  createdAt  DateTime @default(now())
+
+  lessons Lesson[]
+
+  @@index([courseId])
+}
+
+model Lesson {
+  id              String     @id @default(uuid())
+  moduleId        String
+  module          Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  title           String
+  type            LessonType
+  muxAssetId      String?
+  muxPlaybackId   String?
+  pdfKey          String?
+  durationSeconds Int?
+  orderIndex      Int
+  isFreePreview   Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+
+  quiz      Quiz?
+  assignment Assignment?
+  liveClass  LiveClass?
+  progress   LessonProgress[]
+  doubts     Doubt[]
+
+  @@index([moduleId])
+}
+
+// ─── Assessments ──────────────────────────────────────────────────────────────
+
+model Quiz {
+  id               String   @id @default(uuid())
+  lessonId         String   @unique
+  lesson           Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  title            String
+  timeLimitMinutes Int?
+  passingScore     Int      @default(60)
+  createdAt        DateTime @default(now())
+
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
+}
+
+model QuizQuestion {
+  id            String  @id @default(uuid())
+  quizId        String
+  quiz          Quiz    @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  questionText  String  @db.Text
+  questionType  String  @default("mcq")
+  options       Json?
+  correctAnswer String
+  explanation   String? @db.Text
+  orderIndex    Int
+
+  @@index([quizId])
+}
+
+model QuizAttempt {
+  id               String   @id @default(uuid())
+  studentId        String
+  student          User     @relation(fields: [studentId], references: [id])
+  quizId           String
+  quiz             Quiz     @relation(fields: [quizId], references: [id])
+  answers          Json
+  score            Int
+  passed           Boolean
+  timeTakenSeconds Int?
+  xpEarned         Int      @default(0)
+  takenAt          DateTime @default(now())
+
+  @@index([studentId, quizId])
+}
+
+model Assignment {
+  id          String    @id @default(uuid())
+  lessonId    String    @unique
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  title       String
+  description String    @db.Text
+  rubric      Json?
+  dueDate     DateTime?
+  maxScore    Int       @default(100)
+  createdAt   DateTime  @default(now())
+
+  submissions AssignmentSubmission[]
+}
+
+model AssignmentSubmission {
+  id             String     @id @default(uuid())
+  studentId      String
+  student        User       @relation(fields: [studentId], references: [id])
+  assignmentId   String
+  assignment     Assignment @relation(fields: [assignmentId], references: [id])
+  fileKey        String?
+  submissionText String?    @db.Text
+  grade          Int?
+  feedback       String?    @db.Text
+  tutorId        String?
+  submittedAt    DateTime   @default(now())
+  gradedAt       DateTime?
+
+  @@index([studentId, assignmentId])
+}
+
+// ─── Enrollments & Progress ───────────────────────────────────────────────────
+
+model Enrollment {
+  id                   String    @id @default(uuid())
+  studentId            String
+  student              User      @relation(fields: [studentId], references: [id])
+  courseId             String
+  course               Course    @relation(fields: [courseId], references: [id])
+  paymentId            String?   @unique
+  payment              Payment?  @relation(fields: [paymentId], references: [id])
+  amountPaid           Decimal?  @db.Decimal(10, 2)
+  completionPercentage Int       @default(0)
+  isCertified          Boolean   @default(false)
+  certificateKey       String?
+  lastAccessedAt       DateTime?
+  enrolledAt           DateTime  @default(now())
+
+  lessonProgress LessonProgress[]
+
+  @@unique([studentId, courseId])
+  @@index([studentId])
+  @@index([courseId])
+}
+
+model LessonProgress {
+  id              String     @id @default(uuid())
+  enrollmentId    String
+  enrollment      Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  lessonId        String
+  lesson          Lesson     @relation(fields: [lessonId], references: [id])
+  isCompleted     Boolean    @default(false)
+  watchPercentage Int        @default(0)
+  completedAt     DateTime?
+
+  @@unique([enrollmentId, lessonId])
+}
+
+// ─── Payments ─────────────────────────────────────────────────────────────────
+
+model Payment {
+  id                String        @id @default(uuid())
+  studentId         String
+  student           User          @relation(fields: [studentId], references: [id])
+  courseId          String
+  course            Course        @relation(fields: [courseId], references: [id])
+  razorpayOrderId   String        @unique
+  razorpayPaymentId String?       @unique
+  amount            Decimal       @db.Decimal(10, 2)
+  currency          String        @default("INR")
+  status            PaymentStatus @default(PENDING)
+  couponId          String?
+  coupon            Coupon?       @relation(fields: [couponId], references: [id])
+  createdAt         DateTime      @default(now())
+  capturedAt        DateTime?
+
+  enrollment Enrollment?
+
+  @@index([studentId])
+  @@index([courseId])
+}
+
+model Coupon {
+  id            String       @id @default(uuid())
+  instituteId   String
+  institute     Institute    @relation(fields: [instituteId], references: [id])
+  code          String
+  discountType  DiscountType
+  discountValue Decimal      @db.Decimal(10, 2)
+  maxUses       Int?
+  usedCount     Int          @default(0)
+  expiresAt     DateTime?
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+
+  payments Payment[]
+
+  @@unique([instituteId, code])
+}
+
+model SubscriptionPayment {
+  id                 String                    @id @default(uuid())
+  instituteId        String
+  institute          Institute                 @relation(fields: [instituteId], references: [id])
+  planId             String
+  plan               Plan                      @relation(fields: [planId], references: [id])
+  razorpayPaymentId  String?                   @unique
+  amount             Decimal                   @db.Decimal(10, 2)
+  currency           String                    @default("INR")
+  billingPeriodStart DateTime
+  billingPeriodEnd   DateTime
+  status             SubscriptionPaymentStatus @default(PENDING)
+  createdAt          DateTime                  @default(now())
+
+  @@index([instituteId])
+  @@index([status])
+}
+
+// ─── Live Classes ─────────────────────────────────────────────────────────────
+
+model LiveClass {
+  id              String    @id @default(uuid())
+  instituteId     String
+  institute       Institute @relation(fields: [instituteId], references: [id])
+  courseId        String
+  course          Course    @relation(fields: [courseId], references: [id])
+  tutorId         String
+  tutor           User      @relation("TutorLiveClasses", fields: [tutorId], references: [id])
+  lessonId        String?   @unique
+  lesson          Lesson?   @relation(fields: [lessonId], references: [id])
+  title           String
+  scheduledAt     DateTime
+  durationMinutes Int
+  agoraChannelId  String?
+  recordingUrl    String?
+  status          String    @default("scheduled")
+  createdAt       DateTime  @default(now())
+
+  @@index([courseId])
+  @@index([scheduledAt])
+}
+
+// ─── Doubts ───────────────────────────────────────────────────────────────────
+
+model Doubt {
+  id         String   @id @default(uuid())
+  studentId  String
+  student    User     @relation("StudentDoubts", fields: [studentId], references: [id])
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id])
+  lessonId   String?
+  lesson     Lesson?  @relation(fields: [lessonId], references: [id])
+  question   String   @db.Text
+  tutorId    String?
+  tutor      User?    @relation("TutorAnswers", fields: [tutorId], references: [id])
+  answer     String?  @db.Text
+  isResolved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  answeredAt DateTime?
+
+  @@index([courseId, isResolved])
+}
+
+// ─── Practice Lab ─────────────────────────────────────────────────────────────
+
+model PracticeScenario {
+  id          String             @id @default(uuid())
+  instituteId String
+  institute   Institute          @relation(fields: [instituteId], references: [id])
+  moduleType  PracticeModuleType
+  title       String
+  description String             @db.Text
+  difficulty  String
+  content     Json
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+
+  submissions PracticeSubmission[]
+}
+
+model PracticeSubmission {
+  id             String           @id @default(uuid())
+  studentId      String
+  student        User             @relation(fields: [studentId], references: [id])
+  scenarioId     String
+  scenario       PracticeScenario @relation(fields: [scenarioId], references: [id])
+  submissionText String?          @db.Text
+  fileKey        String?
+  aiScore        Int?
+  aiFeedback     Json?
+  tutorScore     Int?
+  tutorFeedback  String?          @db.Text
+  status         String           @default("submitted")
+  submittedAt    DateTime         @default(now())
+  evaluatedAt    DateTime?
+
+  @@index([studentId])
+  @@index([scenarioId])
+}
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  body      String
+  link      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, isRead])
+}
+
+// ─── Announcements ────────────────────────────────────────────────────────────
+
+model Announcement {
+  id          String    @id @default(uuid())
+  instituteId String
+  institute   Institute @relation(fields: [instituteId], references: [id])
+  authorId    String
+  title       String
+  body        String    @db.Text
+  targetRole  Role?
+  createdAt   DateTime  @default(now())
+}

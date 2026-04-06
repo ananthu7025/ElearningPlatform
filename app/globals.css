@@ -1,0 +1,9 @@
+/* LexEd Elearn — app-level overrides on top of Vuexy core.css */
+
+:root {
+  --ledx-sidebar-logo-bg: #7367F0;
+}
+
+.menu .app-brand.demo {
+  height: 64px;
+}

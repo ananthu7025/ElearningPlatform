@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx prisma:*)"
+    ],
+    "additionalDirectories": [
+      "/Users/ananthu/LMS/full-version/assets/vendor/css/pages",
+      "/Users/ananthu/LMS/ledxElearn/app/(super-admin)/super-admin/institutes",
+      "/Users/ananthu/LMS/ledx/app/super-admin/dashboard",
+      "/Users/ananthu/LMS/ledx/app/super-admin/billing",
+      "/Users/ananthu/LMS/ledx/app/super-admin/plans",
+      "/Users/ananthu/LMS/ledx/app/super-admin/settings",
+      "/Users/ananthu/LMS/ledxElearn/app/api/courses/[id]",
+      "/Users/ananthu/LMS/ledxElearn/app/api/lessons/[id]"
+    ]
+  }
+}
