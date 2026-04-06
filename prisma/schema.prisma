@@ -62,6 +62,12 @@ enum PracticeModuleType {
   COURTROOM_ARGUMENT
 }
 
+enum AnnouncementStatus {
+  DRAFT
+  SCHEDULED
+  SENT
+}
+
 enum NotificationType {
   ENROLLMENT
   ASSIGNMENT_GRADED
@@ -158,11 +164,12 @@ model Course {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
-  modules     Module[]
-  enrollments Enrollment[]
-  liveClasses LiveClass[]
-  doubts      Doubt[]
-  payments    Payment[]
+  modules       Module[]
+  enrollments   Enrollment[]
+  liveClasses   LiveClass[]
+  doubts        Doubt[]
+  payments      Payment[]
+  announcements Announcement[]
 
   @@index([instituteId, status])
 }
@@ -477,12 +484,18 @@ model Notification {
 // ─── Announcements ────────────────────────────────────────────────────────────
 
 model Announcement {
-  id          String    @id @default(uuid())
-  instituteId String
-  institute   Institute @relation(fields: [instituteId], references: [id])
-  authorId    String
-  title       String
-  body        String    @db.Text
-  targetRole  Role?
-  createdAt   DateTime  @default(now())
+  id             String             @id @default(uuid())
+  instituteId    String
+  institute      Institute          @relation(fields: [instituteId], references: [id])
+  authorId       String
+  title          String
+  body           String             @db.Text
+  targetRole     Role?
+  targetCourseId String?
+  targetCourse   Course?            @relation(fields: [targetCourseId], references: [id])
+  channels       Json               @default("[\"APP\"]")
+  status         AnnouncementStatus @default(DRAFT)
+  scheduledAt    DateTime?
+  notifiedCount  Int                @default(0)
+  createdAt      DateTime           @default(now())
 }

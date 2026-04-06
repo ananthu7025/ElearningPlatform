@@ -28,6 +28,7 @@ export default function CoursesPage() {
   const [view, setView]                 = useState<'card' | 'table'>('card')
   const [statusFilter, setStatusFilter] = useState('')
   const [search, setSearch]             = useState('')
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null)
 
   const { data, isLoading } = useQuery(
     ['courses', statusFilter],
@@ -41,14 +42,8 @@ export default function CoursesPage() {
 
   const deleteCourse = useMutation(
     (id: string) => api.delete(`/courses/${id}`),
-    { onSuccess: () => qc.invalidateQueries('courses') },
+    { onSuccess: () => { qc.invalidateQueries('courses'); setDeleteTarget(null) } },
   )
-
-  function confirmDelete(id: string, title: string) {
-    if (confirm(`Delete "${title}"? This cannot be undone.`)) {
-      deleteCourse.mutate(id)
-    }
-  }
 
   const courses  = data?.courses ?? []
   const filtered = courses.filter((c: any) =>
@@ -201,14 +196,11 @@ export default function CoursesPage() {
                             </span>
                           </div>
                           <div className="mb-4"></div>
-                          <div className="d-flex gap-2 flex-wrap">
-                            <Link href={`/admin/courses/${c.id}`} className="flex-grow-1 btn btn-label-secondary d-flex align-items-center justify-content-center">
-                              <i className="ti tabler-users icon-xs me-2"></i>Students
-                            </Link>
+                          <div className="d-flex gap-2">
                             <Link href={`/admin/courses/${c.id}`} className="flex-grow-1 btn btn-label-primary d-flex align-items-center justify-content-center">
                               <i className="ti tabler-edit icon-xs me-2"></i>Edit
                             </Link>
-                            <button className="btn btn-label-danger d-flex align-items-center justify-content-center" onClick={() => confirmDelete(c.id, c.title)}>
+                            <button className="btn btn-label-danger d-flex align-items-center justify-content-center" onClick={() => setDeleteTarget({ id: c.id, title: c.title })}>
                               <i className="ti tabler-trash icon-xs"></i>
                             </button>
                           </div>
@@ -275,7 +267,7 @@ export default function CoursesPage() {
                                 {c.status === 'PUBLISHED' ? 'Unpublish' : 'Publish'}
                               </button>
                               <div className="dropdown-divider"></div>
-                              <button className="dropdown-item text-danger" onClick={() => confirmDelete(c.id, c.title)}>
+                              <button className="dropdown-item text-danger" onClick={() => setDeleteTarget({ id: c.id, title: c.title })}>
                                 <i className="ti tabler-trash me-2"></i>Delete Course
                               </button>
                             </div>
@@ -290,6 +282,50 @@ export default function CoursesPage() {
           </div>
         )}
       </div>
+
+      {/* ── Delete Confirmation Modal ────────────────────────────────────── */}
+      {deleteTarget && (
+        <div className="modal show d-block" tabIndex={-1} style={{ background: 'rgba(0,0,0,0.45)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header border-0 pb-0">
+                <button type="button" className="btn-close" onClick={() => setDeleteTarget(null)} />
+              </div>
+              <div className="modal-body px-5 pb-2 text-center">
+                <div className="mb-4">
+                  <span className="avatar avatar-lg bg-label-danger rounded-circle">
+                    <i className="ti tabler-trash icon-28px text-danger" />
+                  </span>
+                </div>
+                <h4 className="mb-2">Delete Course?</h4>
+                <p className="text-body-secondary mb-1">You are about to permanently delete</p>
+                <p className="fw-semibold mb-3">"{deleteTarget.title}"</p>
+                <div className="alert alert-danger py-2 text-start small mb-0">
+                  <i className="ti tabler-alert-triangle me-1" />
+                  <strong>This cannot be undone.</strong> All modules, lessons, enrollments and data for this course will be permanently erased.
+                </div>
+              </div>
+              <div className="modal-footer border-0 pt-3 justify-content-center gap-3">
+                <button type="button" className="btn btn-label-secondary px-5" onClick={() => setDeleteTarget(null)}>
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger px-5"
+                  disabled={deleteCourse.isLoading}
+                  onClick={() => deleteCourse.mutate(deleteTarget.id)}
+                >
+                  {deleteCourse.isLoading
+                    ? <span className="spinner-border spinner-border-sm me-2" />
+                    : <i className="ti tabler-trash me-1" />
+                  }
+                  Yes, Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </AdminLayout>
   )

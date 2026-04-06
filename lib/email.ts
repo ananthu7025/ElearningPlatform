@@ -40,3 +40,36 @@ export async function sendEmail(opts: SendEmailOptions): Promise<void> {
     console.error('[email] Failed to send:', error)
   }
 }
+
+export async function sendTutorInviteEmail(opts: {
+  to: string
+  name: string
+  tempPassword: string
+}): Promise<void> {
+  const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/login`
+
+  await sendEmail({
+    to:      opts.to,
+    subject: 'You have been invited as a Tutor',
+    html: `
+      <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;color:#1a1a2e">
+        <h2 style="margin-top:0">Welcome, ${opts.name}!</h2>
+        <p>You have been invited to join as a <strong>Tutor</strong>. Use the credentials below to log in and set up your account.</p>
+        <table style="margin:24px 0;border-collapse:collapse;width:100%">
+          <tr>
+            <td style="padding:8px 12px;background:#f4f5f7;border-radius:4px 0 0 4px;font-weight:600;white-space:nowrap">Email</td>
+            <td style="padding:8px 12px;background:#f4f5f7;border-radius:0 4px 4px 0">${opts.to}</td>
+          </tr>
+          <tr><td colspan="2" style="height:6px"></td></tr>
+          <tr>
+            <td style="padding:8px 12px;background:#f4f5f7;border-radius:4px 0 0 4px;font-weight:600;white-space:nowrap">Temporary Password</td>
+            <td style="padding:8px 12px;background:#f4f5f7;border-radius:0 4px 4px 0;font-family:monospace;letter-spacing:1px">${opts.tempPassword}</td>
+          </tr>
+        </table>
+        <p>Please change your password after your first login.</p>
+        <a href="${loginUrl}" style="display:inline-block;padding:12px 24px;background:#696cff;color:#fff;border-radius:6px;text-decoration:none;font-weight:600">Log In Now</a>
+        <p style="margin-top:32px;font-size:12px;color:#888">If you did not expect this invitation, you can safely ignore this email.</p>
+      </div>
+    `,
+  })
+}

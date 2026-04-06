@@ -11,7 +11,9 @@
       "/Users/ananthu/LMS/ledx/app/super-admin/plans",
       "/Users/ananthu/LMS/ledx/app/super-admin/settings",
       "/Users/ananthu/LMS/ledxElearn/app/api/courses/[id]",
-      "/Users/ananthu/LMS/ledxElearn/app/api/lessons/[id]"
+      "/Users/ananthu/LMS/ledxElearn/app/api/lessons/[id]",
+      "/Users/ananthu/LMS/ledxElearn/app/api/admin/tutors",
+      "/Users/ananthu/LMS/ledxElearn/app/api/admin/announcements"
     ]
   }
 }

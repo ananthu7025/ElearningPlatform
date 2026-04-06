@@ -8,7 +8,7 @@ const questionSchema = z.object({
   questionText:  z.string().min(1, 'Question text required'),
   questionType:  z.enum(['mcq', 'tf', 'short']).default('mcq'),
   options:       z.array(z.string()).optional(),   // MCQ options array
-  correctAnswer: z.string().min(1, 'Correct answer required'),
+  correctAnswer: z.string(),   // empty string allowed for 'short' type
   explanation:   z.string().optional(),
   orderIndex:    z.number().int().nonnegative(),
 })

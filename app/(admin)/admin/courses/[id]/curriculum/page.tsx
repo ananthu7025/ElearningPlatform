@@ -67,6 +67,7 @@ export default function CurriculumPage() {
   const [openMods,      setOpenMods]      = useState<Set<string>>(new Set())
   const [draggingMod,   setDraggingMod]   = useState<string | null>(null)
   const [toast,         setToast]         = useState('')
+  const [deleteTarget,  setDeleteTarget]  = useState<{ id: string; label: string; type: 'module' | 'lesson' } | null>(null)
 
   // ── Lesson form state ─────────────────────────────────────────────
   const [fModTitle, setFModTitle] = useState('')
@@ -84,9 +85,10 @@ export default function CurriculumPage() {
   const pdfInputRef   = useRef<HTMLInputElement>(null)
 
   // ── Quiz builder state ────────────────────────────────────────────
-  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([])
-  const [quizPassScore, setQuizPassScore] = useState(60)
-  const [quizTimeLimit, setQuizTimeLimit] = useState(30)
+  const [quizQuestions,  setQuizQuestions]  = useState<QuizQuestion[]>([])
+  const [quizPassScore,  setQuizPassScore]  = useState(60)
+  const [quizTimeLimit,  setQuizTimeLimit]  = useState(30)
+  const [quizLoading,    setQuizLoading]    = useState(false)
 
   const newQuestion = (): QuizQuestion => ({ text: '', type: 'mcq', options: ['', '', '', ''], correct: 0, explanation: '' })
   const addQ    = ()              => setQuizQuestions((qs) => [...qs, newQuestion()])
@@ -98,11 +100,21 @@ export default function CurriculumPage() {
       ? { ...q, options: q.options.map((o, j) => j === oi ? val : o) } : q))
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
+
+  // errorResponse stores fieldErrors objects as `error.message` — always stringify safely
+  const apiErrMsg = (e: any): string => {
+    const msg = e?.response?.data?.error?.message
+    if (!msg)                  return e?.message ?? 'Something went wrong'
+    if (typeof msg === 'string') return msg
+    // fieldErrors shape: { fieldName: string[] }
+    return Object.values(msg as Record<string, string[]>).flat().join(' · ')
+  }
+
   const close     = () => {
     setModal(null); setIsEdit(false)
     setVideoFile(null); setPdfFile(null)
     setUploadProgress(0); setUploading(false); setUploadError(null)
-    setQuizQuestions([]); setQuizPassScore(60); setQuizTimeLimit(30)
+    setQuizQuestions([]); setQuizPassScore(60); setQuizTimeLimit(30); setQuizLoading(false)
   }
 
   // ── Data ──────────────────────────────────────────────────────────
@@ -126,7 +138,7 @@ export default function CurriculumPage() {
   )
   const deleteModule = useMutation(
     (moduleId: string) => api.delete(`/modules/${moduleId}`),
-    { onSuccess: () => { qc.invalidateQueries(['curriculum', id]); showToast('Module deleted.') } },
+    { onSuccess: () => { qc.invalidateQueries(['curriculum', id]); setDeleteTarget(null); showToast('Module deleted.') } },
   )
   const reorderModules = useMutation(
     (moduleIds: string[]) => api.put(`/courses/${id}/modules/reorder`, { moduleIds }),
@@ -144,7 +156,7 @@ export default function CurriculumPage() {
   )
   const deleteLesson = useMutation(
     (lessonId: string) => api.delete(`/lessons/${lessonId}`),
-    { onSuccess: () => { qc.invalidateQueries(['curriculum', id]); showToast('Lesson deleted.') } },
+    { onSuccess: () => { qc.invalidateQueries(['curriculum', id]); setDeleteTarget(null); showToast('Lesson deleted.') } },
   )
 
   // ── Drag-drop reorder ─────────────────────────────────────────────
@@ -190,24 +202,35 @@ export default function CurriculumPage() {
   }
 
   async function fetchQuizForEdit(lessonId: string) {
+    setQuizLoading(true)
+    setUploadError(null)
     try {
       const res  = await api.get(`/lessons/${lessonId}/quiz`)
       const quiz = res.data.quiz
-      if (!quiz) return
+      if (!quiz) {
+        setUploadError('No quiz found for this lesson yet.')
+        return
+      }
       setQuizPassScore(quiz.passingScore ?? 60)
       setQuizTimeLimit(quiz.timeLimitMinutes ?? 30)
       setQuizQuestions(
         (quiz.questions as any[]).map((q) => ({
-          text:        q.questionText,
-          type:        q.questionType as QuizQuestion['type'],
-          options:     q.options?.length ? q.options : ['', '', '', ''],
+          text:        q.questionText ?? '',
+          type:        (q.questionType ?? 'mcq') as QuizQuestion['type'],
+          options:     Array.isArray(q.options) && q.options.length >= 4
+                         ? q.options
+                         : ['', '', '', ''],
           correct:     q.questionType === 'mcq'
                          ? Math.max(0, (q.options as string[]).indexOf(q.correctAnswer))
                          : q.correctAnswer === 'True' ? 0 : 1,
           explanation: q.explanation ?? '',
         })),
       )
-    } catch { /* leave blank if fetch fails */ }
+    } catch (e: any) {
+      setUploadError(apiErrMsg(e))
+    } finally {
+      setQuizLoading(false)
+    }
   }
 
   // ── Upload helpers ────────────────────────────────────────────────
@@ -277,7 +300,7 @@ export default function CurriculumPage() {
       qc.invalidateQueries(['curriculum', id])
       close()
     } catch (e: any) {
-      setUploadError(e.response?.data?.error?.message ?? e.message ?? 'Upload failed')
+      setUploadError(apiErrMsg(e))
     } finally {
       setUploading(false)
     }
@@ -318,7 +341,7 @@ export default function CurriculumPage() {
       qc.invalidateQueries(['curriculum', id])
       close()
     } catch (e: any) {
-      setUploadError(e.response?.data?.error?.message ?? e.message ?? 'Upload failed')
+      setUploadError(apiErrMsg(e))
     } finally {
       setUploading(false)
     }
@@ -330,6 +353,10 @@ export default function CurriculumPage() {
     if (quizQuestions.length < 1) { setUploadError('Add at least one question.'); return }
     const invalid = quizQuestions.find((q) => !q.text.trim())
     if (invalid) { setUploadError('All questions must have question text.'); return }
+    const noAnswer = quizQuestions.find(
+      (q) => q.type === 'mcq' && !q.options[q.correct]?.trim()
+    )
+    if (noAnswer) { setUploadError('Select a correct answer for all MCQ questions.'); return }
 
     setUploading(true); setUploadError(null)
 
@@ -371,7 +398,7 @@ export default function CurriculumPage() {
       qc.invalidateQueries(['curriculum', id])
       close()
     } catch (e: any) {
-      setUploadError(e.response?.data?.error?.message ?? e.message ?? 'Failed to save quiz')
+      setUploadError(apiErrMsg(e))
     } finally {
       setUploading(false)
     }
@@ -389,7 +416,7 @@ export default function CurriculumPage() {
 
   const isLessonModal = modal !== null && LESSON_MODAL_TYPES.includes(modal)
   const isAdding      = !isEdit
-  const isBusy        = uploading || addLesson.isLoading || editLesson.isLoading
+  const isBusy        = uploading || quizLoading || addLesson.isLoading || editLesson.isLoading
 
   return (
     <AdminLayout title="Edit Curriculum" breadcrumb={`Home / Courses / ${course?.title ?? '…'} / Curriculum`}>
@@ -508,7 +535,7 @@ export default function CurriculumPage() {
                       <button className="btn btn-sm btn-icon btn-text-secondary rounded-pill" onClick={() => { setTargetMod(mod.id); setFModTitle(mod.title); setModal('editModule') }}>
                         <i className="ti tabler-edit"></i>
                       </button>
-                      <button className="btn btn-sm btn-icon btn-text-danger rounded-pill" onClick={() => { if (confirm(`Delete "${mod.title}"?`)) deleteModule.mutate(mod.id) }}>
+                      <button className="btn btn-sm btn-icon btn-text-danger rounded-pill" onClick={() => setDeleteTarget({ id: mod.id, label: mod.title, type: 'module' })}>
                         <i className="ti tabler-trash"></i>
                       </button>
                     </div>
@@ -554,7 +581,7 @@ export default function CurriculumPage() {
                                       <i className="ti tabler-eye me-2"></i>Preview
                                     </button>
                                     <div className="dropdown-divider"></div>
-                                    <button className="dropdown-item text-danger" onClick={() => { if (confirm(`Delete "${lesson.title}"?`)) deleteLesson.mutate(lesson.id) }}>
+                                    <button className="dropdown-item text-danger" onClick={() => setDeleteTarget({ id: lesson.id, label: lesson.title, type: 'lesson' })}>
                                       <i className="ti tabler-trash me-2"></i>Delete
                                     </button>
                                   </div>
@@ -793,6 +820,12 @@ export default function CurriculumPage() {
               {/* ── Quiz builder ── */}
               {(modal === 'addQuiz' || (modal === 'addLesson' && fType === 'QUIZ')) && (
                 <div className="mb-4">
+                  {quizLoading ? (
+                    <div className="text-center py-4">
+                      <div className="spinner-border text-warning spinner-border-sm me-2" />
+                      <small className="text-body-secondary">Loading quiz data…</small>
+                    </div>
+                  ) : null}
                   <div className="row g-3 mb-4">
                     <div className="col-6">
                       <label className="form-label fw-medium small">Pass Score (%)</label>
@@ -810,7 +843,7 @@ export default function CurriculumPage() {
                     <label className="form-label fw-medium mb-0">
                       Questions <span className="badge bg-label-warning ms-1">{quizQuestions.length}</span>
                     </label>
-                    <button type="button" className="btn btn-sm btn-label-primary" onClick={addQ}>
+                    <button type="button" className="btn btn-sm btn-label-primary" onClick={addQ} disabled={quizLoading}>
                       <i className="ti tabler-plus me-1"></i>Add Question
                     </button>
                   </div>
@@ -993,6 +1026,56 @@ export default function CurriculumPage() {
                 <button className="btn btn-outline-secondary" onClick={close}>Close</button>
                 <button className="btn btn-primary" onClick={() => { close(); openEditLesson(targetLesson, targetMod) }}>
                   <i className="ti tabler-edit me-1"></i>Edit Lesson
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete Confirmation Modal ────────────────────────────────────── */}
+      {deleteTarget && (
+        <div className="modal show d-block" tabIndex={-1} style={{ background: 'rgba(0,0,0,0.45)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header border-0 pb-0">
+                <button type="button" className="btn-close" onClick={() => setDeleteTarget(null)} />
+              </div>
+              <div className="modal-body px-5 pb-2 text-center">
+                <div className="mb-4">
+                  <span className="avatar avatar-lg bg-label-danger rounded-circle">
+                    <i className="ti tabler-trash icon-28px text-danger" />
+                  </span>
+                </div>
+                <h4 className="mb-2">Delete {deleteTarget.type === 'module' ? 'Module' : 'Lesson'}?</h4>
+                <p className="text-body-secondary mb-1">You are about to permanently delete</p>
+                <p className="fw-semibold mb-3">"{deleteTarget.label}"</p>
+                <div className="alert alert-danger py-2 text-start small mb-0">
+                  <i className="ti tabler-alert-triangle me-1" />
+                  <strong>This cannot be undone.</strong>{' '}
+                  {deleteTarget.type === 'module'
+                    ? 'All lessons inside this module will also be deleted.'
+                    : 'The lesson content and any quiz data will be permanently erased.'}
+                </div>
+              </div>
+              <div className="modal-footer border-0 pt-3 justify-content-center gap-3">
+                <button type="button" className="btn btn-label-secondary px-5" onClick={() => setDeleteTarget(null)}>
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger px-5"
+                  disabled={deleteModule.isLoading || deleteLesson.isLoading}
+                  onClick={() => {
+                    if (deleteTarget.type === 'module') deleteModule.mutate(deleteTarget.id)
+                    else deleteLesson.mutate(deleteTarget.id)
+                  }}
+                >
+                  {(deleteModule.isLoading || deleteLesson.isLoading)
+                    ? <span className="spinner-border spinner-border-sm me-2" />
+                    : <i className="ti tabler-trash me-1" />
+                  }
+                  Yes, Delete
                 </button>
               </div>
             </div>

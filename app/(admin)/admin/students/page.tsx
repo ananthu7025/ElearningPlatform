@@ -71,6 +71,33 @@ const inviteSchema = z.object({
 })
 type InviteForm = z.infer<typeof inviteSchema>
 
+// ── CSV helpers ────────────────────────────────────────────────────────────────
+
+function toCSV(rows: Student[]): string {
+  const headers = ['Name', 'Email', 'Courses Enrolled', 'Payment Status', 'Avg Progress (%)', 'Joined', 'Last Active']
+  const escape  = (v: string) => `"${v.replace(/"/g, '""')}"`
+  const lines   = rows.map((s) => [
+    escape(s.name),
+    escape(s.email),
+    String(s._count.enrollments),
+    s.paymentStatus,
+    String(s.avgProgress),
+    escape(fmtDate(s.createdAt)),
+    escape(fmtRelative(s.lastLoginAt)),
+  ].join(','))
+  return [headers.join(','), ...lines].join('\n')
+}
+
+function downloadCSV(content: string, filename: string) {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href     = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function StudentsPage() {
@@ -136,6 +163,31 @@ export default function StudentsPage() {
     const ns = new Set(selected)
     checked ? ns.add(id) : ns.delete(id)
     setSelected(ns)
+  }
+
+  // ── CSV export ───────────────────────────────────────────────────
+  const [exporting, setExporting] = useState(false)
+
+  const handleExportAll = async () => {
+    setExporting(true)
+    try {
+      const allParams = new URLSearchParams({
+        ...(search   ? { search }   : {}),
+        ...(courseId ? { courseId } : {}),
+        ...(payment  ? { payment }  : {}),
+        limit: '10000',
+      })
+      const res  = await api.get(`/admin/students?${allParams}`)
+      const rows: Student[] = res.data?.students ?? []
+      downloadCSV(toCSV(rows), `students-${new Date().toISOString().slice(0, 10)}.csv`)
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  const handleExportSelected = () => {
+    const rows = students.filter((s) => selected.has(s.id))
+    downloadCSV(toCSV(rows), `students-selected-${new Date().toISOString().slice(0, 10)}.csv`)
   }
 
   // ── Pagination ────────────────────────────────────────────────────
@@ -236,8 +288,16 @@ export default function StudentsPage() {
                 onChange={(e) => { setSearch(e.target.value); setPage(1) }}
               />
             </div>
-            <button className="btn btn-sm btn-outline-secondary">
-              <i className="ti tabler-download me-1"></i>Export
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={handleExportAll}
+              disabled={exporting}
+            >
+              {exporting
+                ? <span className="spinner-border spinner-border-sm me-1" />
+                : <i className="ti tabler-download me-1"></i>
+              }
+              Export CSV
             </button>
             <button className="btn btn-sm btn-primary" onClick={() => setShowCanvas(true)}>
               <i className="ti tabler-plus me-1"></i>Add Student
@@ -249,14 +309,12 @@ export default function StudentsPage() {
         {selected.size > 0 && (
           <div className="px-4 py-2 bg-label-primary d-flex align-items-center gap-3 flex-wrap border-bottom">
             <span className="fw-semibold small">{selected.size} selected</span>
-            {[
-              ['tabler-mail',    'Send Message'],
-              ['tabler-download','Export CSV'],
-            ].map(([icon, label]) => (
-              <button key={label} className="btn btn-sm btn-outline-primary bg-white">
-                <i className={`ti ${icon} me-1`}></i>{label}
-              </button>
-            ))}
+            <button className="btn btn-sm btn-outline-primary bg-white">
+              <i className="ti tabler-mail me-1"></i>Send Message
+            </button>
+            <button className="btn btn-sm btn-outline-primary bg-white" onClick={handleExportSelected}>
+              <i className="ti tabler-download me-1"></i>Export CSV
+            </button>
           </div>
         )}
 
