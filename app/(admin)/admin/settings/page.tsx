@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from 'react-query'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth.store'
 
@@ -268,9 +268,9 @@ export default function AdminSettingsPage() {
               <button
                 className="btn btn-primary"
                 onClick={handleSavePublicSettings}
-                disabled={saveSettings.isPending}
+                disabled={saveSettings.isLoading}
               >
-                {saveSettings.isPending && (
+                {saveSettings.isLoading && (
                   <span className="spinner-border spinner-border-sm me-2" role="status" />
                 )}
                 Save Settings
