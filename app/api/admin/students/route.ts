@@ -3,6 +3,7 @@ import { requireRole } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { handleRouteError, errorResponse } from '@/lib/errors'
 import { checkStudentLimit } from '@/lib/planGate'
+import { sendStudentInviteEmail } from '@/lib/email'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 
@@ -128,8 +129,17 @@ export async function POST(req: NextRequest) {
       select: { id: true, name: true, email: true, createdAt: true },
     })
 
-    // TODO: send invite email with tempPassword via Resend
-    console.log(`Student invite: ${parsed.data.email} / ${tempPassword}`)
+    // Send invite email (fire-and-forget — don't fail the request on email error)
+    const institute = await prisma.institute.findUnique({
+      where: { id: instituteId },
+      select: { name: true },
+    })
+    sendStudentInviteEmail({
+      to:            parsed.data.email,
+      name:          parsed.data.name,
+      tempPassword,
+      instituteName: institute?.name ?? 'your institute',
+    }).catch((err) => console.error('[invite email]', err))
 
     return NextResponse.json({ student, tempPassword }, { status: 201 })
   } catch (e) {

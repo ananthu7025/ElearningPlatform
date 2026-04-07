@@ -10,7 +10,7 @@ export async function GET() {
     const institute = await prisma.institute.findUnique({
       where: { id: user.instituteId! },
       include: {
-        plan: { select: { id: true, name: true, priceMonthly: true, maxStudents: true, maxCourses: true } },
+        plan: { select: { id: true, name: true, priceMonthly: true, maxStudents: true, maxCourses: true, features: true } },
       },
     })
 

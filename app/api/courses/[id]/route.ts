@@ -5,12 +5,14 @@ import { handleRouteError, errorResponse } from '@/lib/errors'
 import { z } from 'zod'
 
 const updateSchema = z.object({
-  title:        z.string().min(3).optional(),
-  description:  z.string().optional(),
-  price:        z.coerce.number().nonnegative().optional(),
-  thumbnailUrl: z.string().optional(),
-  tutorId:      z.string().uuid().optional(),
-  category:     z.string().optional(),
+  title:               z.string().min(3).optional(),
+  description:         z.string().optional(),
+  previewDescription:  z.string().optional().nullable(),
+  price:               z.coerce.number().nonnegative().optional(),
+  thumbnailUrl:        z.string().optional().nullable(),
+  tutorId:             z.string().uuid().optional(),
+  category:            z.string().optional(),
+  isPublicEnrollable:  z.boolean().optional(),
 })
 
 async function getCourse(id: string, instituteId: string) {

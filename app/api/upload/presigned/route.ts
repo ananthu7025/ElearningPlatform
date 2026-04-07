@@ -33,11 +33,13 @@ export async function POST(req: NextRequest) {
     const ext = parsed.data.fileName.split('.').pop()
     const key = `${folder}/${randomUUID()}.${ext}`
 
+    console.log('[Presigned] Generating URL — bucket:', process.env.R2_BUCKET, '| key:', key, '| contentType:', contentType)
     const url = await getSignedUrl(
       r2,
       new PutObjectCommand({ Bucket: process.env.R2_BUCKET!, Key: key, ContentType: contentType }),
       { expiresIn: 300 }
     )
+    console.log('[Presigned] URL generated successfully. Public URL:', `${process.env.R2_PUBLIC_URL}/${key}`)
 
     return NextResponse.json({ url, key, publicUrl: `${process.env.R2_PUBLIC_URL}/${key}` })
   } catch (e) {

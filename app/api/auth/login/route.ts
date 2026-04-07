@@ -13,9 +13,10 @@ const schema = z.object({
 })
 
 export async function POST(req: NextRequest) {
-  // Rate limit: 10 login attempts per IP per 15 minutes
+  // Rate limit: 10 login attempts per IP per 15 minutes (100 in development)
   const ip = getClientIp(req)
-  const { allowed, remaining } = await rateLimit({ key: `login:${ip}`, limit: 10, window: 900 })
+  const limit = process.env.NODE_ENV === 'development' ? 100 : 10
+  const { allowed, remaining } = await rateLimit({ key: `login:${ip}`, limit, window: 900 })
   if (!allowed) return rateLimitResponse(remaining)
 
   const body = schema.safeParse(await req.json())

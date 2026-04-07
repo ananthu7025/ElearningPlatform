@@ -60,6 +60,8 @@ enum PracticeModuleType {
   CONTRACT_DRAFTING
   CLIENT_INTERVIEW
   COURTROOM_ARGUMENT
+  MOOT_COURT
+  LEGAL_RESEARCH
 }
 
 enum AnnouncementStatus {
@@ -106,6 +108,8 @@ model Institute {
   plan         Plan            @relation(fields: [planId], references: [id])
   status       InstituteStatus @default(TRIAL)
   trialEndsAt  DateTime?
+  isPublic     Boolean         @default(false)
+  publicSlug   String?         @unique
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
 
@@ -113,6 +117,7 @@ model Institute {
   courses              Course[]
   coupons              Coupon[]
   liveClasses          LiveClass[]
+  practiceModules      PracticeModule[]
   scenarios            PracticeScenario[]
   announcements        Announcement[]
   subscriptionPayments SubscriptionPayment[]
@@ -129,21 +134,23 @@ model User {
   name         String
   avatarUrl    String?
   role         Role
-  isActive     Boolean    @default(true)
-  lastLoginAt  DateTime?
-  createdAt    DateTime   @default(now())
+  isActive       Boolean    @default(true)
+  emailVerified  Boolean    @default(false)
+  lastLoginAt    DateTime?
+  createdAt      DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
-  taughtCourses       Course[]               @relation("TutorCourses")
-  liveClasses         LiveClass[]            @relation("TutorLiveClasses")
-  enrollments         Enrollment[]
-  quizAttempts        QuizAttempt[]
-  submissions         AssignmentSubmission[]
-  doubtsAsked         Doubt[]                @relation("StudentDoubts")
-  doubtsAnswered      Doubt[]                @relation("TutorAnswers")
-  notifications       Notification[]
-  practiceSubmissions PracticeSubmission[]
-  payments            Payment[]
+  taughtCourses        Course[]               @relation("TutorCourses")
+  liveClasses          LiveClass[]            @relation("TutorLiveClasses")
+  enrollments          Enrollment[]
+  quizAttempts         QuizAttempt[]
+  submissions          AssignmentSubmission[]
+  doubtsAsked          Doubt[]                @relation("StudentDoubts")
+  doubtsAnswered       Doubt[]                @relation("TutorAnswers")
+  notifications        Notification[]
+  practiceSubmissions  PracticeSubmission[]
+  authoredScenarios    PracticeScenario[]     @relation("TutorScenarios")
+  payments             Payment[]
 }
 
 // ─── Courses ──────────────────────────────────────────────────────────────────
@@ -154,9 +161,11 @@ model Course {
   institute     Institute    @relation(fields: [instituteId], references: [id])
   tutorId       String
   tutor         User         @relation("TutorCourses", fields: [tutorId], references: [id])
-  title         String
-  description   String       @db.Text
-  thumbnailUrl  String?
+  title                String
+  description          String       @db.Text
+  previewDescription   String?      @db.Text
+  thumbnailUrl         String?
+  isPublicEnrollable   Boolean      @default(true)
   price         Decimal      @db.Decimal(10, 2)
   category      String
   status        CourseStatus @default(DRAFT)
@@ -430,19 +439,39 @@ model Doubt {
 
 // ─── Practice Lab ─────────────────────────────────────────────────────────────
 
+model PracticeModule {
+  id          String             @id @default(uuid())
+  instituteId String
+  institute   Institute          @relation(fields: [instituteId], references: [id])
+  moduleType  PracticeModuleType
+  isEnabled   Boolean            @default(true)
+  updatedAt   DateTime           @updatedAt
+
+  @@unique([instituteId, moduleType])
+  @@index([instituteId])
+}
+
 model PracticeScenario {
   id          String             @id @default(uuid())
   instituteId String
   institute   Institute          @relation(fields: [instituteId], references: [id])
   moduleType  PracticeModuleType
+  tutorId     String?
+  tutor       User?              @relation("TutorScenarios", fields: [tutorId], references: [id])
   title       String
+  clientName  String?
+  caseType    String?
+  caseId      String?
   description String             @db.Text
   difficulty  String
   content     Json
+  isPublished Boolean            @default(false)
   isActive    Boolean            @default(true)
   createdAt   DateTime           @default(now())
 
   submissions PracticeSubmission[]
+
+  @@index([instituteId, moduleType])
 }
 
 model PracticeSubmission {
