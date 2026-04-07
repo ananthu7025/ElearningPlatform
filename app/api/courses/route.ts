@@ -16,11 +16,12 @@ const createSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
-    const user = await requireRole('ADMIN', 'TUTOR')
+    const user = await requireRole('ADMIN', 'TUTOR', 'STUDENT')
     const instituteId = user.instituteId!
 
     const { searchParams } = new URL(req.url)
     const status  = searchParams.get('status') ?? undefined
+    const search  = searchParams.get('search') ?? undefined
     const page    = Math.max(1, Number(searchParams.get('page') ?? 1))
     const limit   = Math.min(50, Number(searchParams.get('limit') ?? 20))
 
@@ -28,6 +29,7 @@ export async function GET(req: NextRequest) {
       instituteId,
       ...(status ? { status: status as any } : {}),
       ...(user.role === 'TUTOR' ? { tutorId: user.userId } : {}),
+      ...(search ? { title: { contains: search, mode: 'insensitive' as const } } : {}),
     }
 
     const [courses, total] = await Promise.all([
