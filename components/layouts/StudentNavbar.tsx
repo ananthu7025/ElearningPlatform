@@ -63,17 +63,6 @@ export default function StudentNavbar() {
           </Link>
         </div>
 
-        {/* Horizontal nav */}
-        <ul className="navbar-nav align-items-center me-auto d-none d-xl-flex">
-          {MENU_ITEMS.map((item) => (
-            <li key={item.href} className="nav-item">
-              <Link href={item.href} className="nav-link d-flex align-items-center gap-1 px-3">
-                <i className={`ti ${item.icon} me-1`} />
-                {item.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
 
         {/* Right icons */}
         <div className="navbar-nav-right d-flex align-items-center justify-content-end ms-auto">

@@ -1,6 +1,7 @@
 'use client'
 
 import StudentNavbar from './StudentNavbar'
+import StudentMenu from './StudentMenu'
 import BootstrapClient from '@/components/BootstrapClient'
 
 interface Props {
@@ -17,8 +18,9 @@ export default function StudentLayout({ children, title }: Props) {
 
           <StudentNavbar />
 
-          <div className="layout-page">
+          <div className="layout-page" style={{ paddingTop: 64 }}>
             <div className="content-wrapper">
+              <StudentMenu />
               <div className="container-xxl flex-grow-1 container-p-y">
                 {title && <h4 className="py-3 mb-4">{title}</h4>}
                 {children}
