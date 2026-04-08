@@ -56,7 +56,9 @@ export default function QuizLessonPage() {
     setShowConfirm(false)
     let correct = 0
     questions.forEach((q: any, i: number) => {
-      if (answers[i] === q.correctAnswer) correct++
+      const userAns = (answers[i] || '').trim().toLowerCase()
+      const correctAns = (q.correctAnswer || '').trim().toLowerCase()
+      if (userAns === correctAns) correct++
     })
     const score = Math.round((correct / questions.length) * 100)
     const passed = score >= (quiz?.passingScore ?? 60)
@@ -219,23 +221,41 @@ export default function QuizLessonPage() {
                       </div>
 
                       <div className="d-flex flex-column gap-3">
-                         {options.map((opt, i) => {
-                           const id = String.fromCharCode(65 + i)
-                           const isSelected = answers[currentIdx] === id
-                           return (
-                             <label 
-                               key={id}
-                               className={`d-flex align-items-start gap-4 p-4 rounded border border-2 cursor-pointer transition-all ${isSelected ? 'border-primary bg-label-primary' : 'border-light hover-bg-light'}`}
-                               onClick={() => setAnswers({...answers, [currentIdx]: id})}
-                             >
-                               <div className={`avatar avatar-xs rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0 transition-all ${isSelected ? 'bg-primary text-white scale-11' : 'bg-label-secondary text-body-secondary border'}`}>
-                                  {id}
-                               </div>
-                               <p className={`small lh-base mb-0 ${isSelected ? 'text-primary fw-bold' : 'text-heading'}`}>{opt}</p>
-                               <input type="radio" className="d-none" checked={isSelected} readOnly />
-                             </label>
-                           )
-                         })}
+                         {q.questionType === 'mcq' ? (
+                           options.map((opt, i) => {
+                             const id = String.fromCharCode(65 + i)
+                             const isSelected = answers[currentIdx] === id
+                             return (
+                               <label 
+                                 key={id}
+                                 className={`d-flex align-items-start gap-4 p-4 rounded border border-2 cursor-pointer transition-all ${isSelected ? 'border-primary bg-label-primary' : 'border-light hover-bg-light'}`}
+                                 onClick={() => setAnswers({...answers, [currentIdx]: id})}
+                               >
+                                 <div className={`avatar avatar-xs rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0 transition-all ${isSelected ? 'bg-primary text-white scale-11' : 'bg-label-secondary text-body-secondary border'}`}>
+                                    {id}
+                                 </div>
+                                 <p className={`small lh-base mb-0 ${isSelected ? 'text-primary fw-bold' : 'text-heading'}`}>{opt}</p>
+                                 <input type="radio" className="d-none" checked={isSelected} readOnly />
+                               </label>
+                             )
+                           })
+                         ) : (
+                           <div className="p-1">
+                              <label className="form-label extra-small fw-black text-body-secondary text-uppercase mb-3 tracking-widest">Your Written Answer</label>
+                              <textarea 
+                                className="form-control border-2 bg-body-tertiary p-5 small lh-base shadow-none focus-ring-primary"
+                                rows={6}
+                                placeholder="Type your answer here..."
+                                value={answers[currentIdx] || ''}
+                                onChange={(e) => setAnswers({...answers, [currentIdx]: e.target.value})}
+                                style={{ borderRadius: 12 }}
+                              />
+                              <div className="mt-3 d-flex align-items-center gap-2 text-body-secondary extra-small">
+                                 <i className="ti tabler-info-circle small"></i>
+                                 <span>Answers are case-insensitive by default.</span>
+                              </div>
+                           </div>
+                         )}
                       </div>
                    </div>
                 </div>

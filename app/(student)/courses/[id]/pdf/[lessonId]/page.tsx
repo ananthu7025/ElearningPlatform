@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import Link from 'next/link'
@@ -18,6 +19,8 @@ export default function PDFLessonPage() {
 
   const lesson = lessonData?.lesson
   const pdfUrl = lessonData?.pdfUrl
+
+  const [currentPage, setCurrentPage] = useState(1)
 
   // 2. Progress Mutation
   const markComplete = useMutation((payload: any) =>
@@ -76,25 +79,31 @@ export default function PDFLessonPage() {
       </div>
 
       <div className="d-flex flex-grow-1 overflow-hidden h-100">
-        {/* Left Sidebar: Navigation Thumbnails (Placeholder for UI) */}
-        <div className="d-none d-md-flex flex-column align-items-center py-5 gap-4 overflow-auto bg-dark border-end" style={{ width: 100, backgroundColor: '#0f0f1a', borderRightColor: 'rgba(255,255,255,0.1)' }}>
-           {[1, 2, 3, 4, 5].map(i => (
-             <div key={i} className={`rounded overflow-hidden cursor-pointer transition-all ${i === 1 ? 'ring-primary border-primary' : 'opacity-50'}`} style={{ width: 64, outline: i === 1 ? '2px solid #7367f0' : '1px solid rgba(255,255,255,0.1)' }}>
+        {/* Left Sidebar: Navigation Thumbnails */}
+        <div className="d-none d-md-flex flex-column align-items-center py-5 gap-4 overflow-auto bg-dark border-end scrollbar-hide" style={{ width: 100, backgroundColor: '#0f0f1a', borderRightColor: 'rgba(255,255,255,0.1)' }}>
+           {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+             <div 
+                key={i} 
+                className={`rounded overflow-hidden cursor-pointer transition-all ${i === currentPage ? 'ring-primary border-primary scale-105 shadow-lg' : 'opacity-40 hover-opacity-100'}`} 
+                style={{ width: 64, outline: i === currentPage ? '2px solid #7367f0' : '1px solid rgba(255,255,255,0.1)' }}
+                onClick={() => setCurrentPage(i)}
+              >
                 <div className="bg-white p-2 d-flex flex-column gap-1" style={{ aspectRatio: '3/4' }}>
                    {[1,2,3,4,5,6].map(l => <div key={l} className="bg-light rounded" style={{ height: 2, width: l % 3 === 0 ? '60%' : '100%' }}></div>)}
                 </div>
                 <div className="text-center py-2 text-white extra-small opacity-75">{i}</div>
              </div>
            ))}
-           <div className="extra-small text-white opacity-25 mt-auto pb-4">...</div>
+           <div className="extra-small text-white opacity-25 mt-auto pb-4">End of Preview</div>
         </div>
 
         {/* Main PDF Content */}
         <div className="flex-grow-1 overflow-auto d-flex flex-column align-items-center p-4 bg-dark bg-opacity-25 shadow-inner">
            {pdfUrl ? (
-             <div className="w-100 h-100 d-flex justify-content-center shadow-lg rounded">
+             <div className="w-100 h-100 d-flex justify-content-center shadow-lg rounded overflow-hidden">
                 <iframe 
-                  src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`} 
+                  key={currentPage}
+                  src={`${pdfUrl}#page=${currentPage}&toolbar=0&navpanes=0&scrollbar=0&view=FitH`} 
                   className="w-100 h-100 border-0 rounded"
                   style={{ maxWidth: 1000, minHeight: '85vh' }}
                   title={lesson.title}
