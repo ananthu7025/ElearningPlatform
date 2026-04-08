@@ -15,7 +15,7 @@ export function usePlanFeatures() {
   )
 
   const features: string[] = data?.plan?.features ?? []
-
+console.log(features)
   return {
     isLoading,
     planName: data?.plan?.name ?? '',

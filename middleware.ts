@@ -9,9 +9,18 @@ const PUBLIC_PATHS = [
   '/api/auth',
   '/api/health',
   '/api/webhooks',
+  '/api/public',
 ]
 
 const STATIC = ['/_next', '/vendor', '/css', '/img', '/favicon', '/uploads']
+
+// First path segments that belong to authenticated areas — everything else
+// at root level is treated as a public institute slug page
+const PROTECTED_SEGMENTS = new Set([
+  'admin', 'tutor', 'super-admin', 'dashboard', 'courses', 'learn',
+  'practice-lab', 'ai-tutor', 'certificates', 'profile', 'api',
+  'login', 'forgot-password', 'reset-password', '_next', 'favicon.ico',
+])
 
 // Role → home page
 const ROLE_HOME: Record<string, string> = {
@@ -37,6 +46,10 @@ export async function middleware(req: NextRequest) {
 
   // Allow public paths
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) return NextResponse.next()
+
+  // Allow public institute slug pages (e.g. /my-institute, /my-institute/courses/...)
+  const firstSegment = pathname.split('/')[1] ?? ''
+  if (firstSegment && !PROTECTED_SEGMENTS.has(firstSegment)) return NextResponse.next()
 
   // ── Tenant subdomain — pass as header, resolved by route handlers ──────────
   const host = req.headers.get('host') ?? ''

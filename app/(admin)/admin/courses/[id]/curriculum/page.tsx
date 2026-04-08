@@ -236,10 +236,26 @@ export default function CurriculumPage() {
   // ── Upload helpers ────────────────────────────────────────────────
   function uploadWithXHR(url: string, file: File): Promise<void> {
     return new Promise((resolve, reject) => {
+      console.log('[XHR] Starting upload to R2')
+      console.log('[XHR] URL:', url)
+      console.log('[XHR] File:', file.name, '|', file.type, '|', file.size, 'bytes')
       const xhr = new XMLHttpRequest()
-      xhr.upload.onprogress = (e) => { if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100)) }
-      xhr.onload  = () => (xhr.status < 300 ? resolve() : reject(new Error(`Upload failed: ${xhr.status}`)))
-      xhr.onerror = () => reject(new Error('Network error during upload'))
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded / e.total) * 100)
+          console.log(`[XHR] Progress: ${pct}%`)
+          setUploadProgress(pct)
+        }
+      }
+      xhr.onload  = () => {
+        console.log('[XHR] onload status:', xhr.status, xhr.statusText)
+        console.log('[XHR] Response:', xhr.responseText)
+        xhr.status < 300 ? resolve() : reject(new Error(`Upload failed: ${xhr.status} — ${xhr.responseText}`))
+      }
+      xhr.onerror = () => {
+        console.error('[XHR] Network error — likely CORS or wrong endpoint')
+        reject(new Error('Network error during upload'))
+      }
       xhr.open('PUT', url)
       xhr.setRequestHeader('Content-Type', file.type)
       xhr.send(file)
@@ -311,36 +327,53 @@ export default function CurriculumPage() {
     if (!fTitle.trim()) { setUploadError('Enter a title.'); return }
     if (!isEdit && !pdfFile) { setUploadError('Select a PDF file.'); return }
     setUploading(true); setUploadError(null); setUploadProgress(0)
+    console.log('[PDF Upload] Starting —', isEdit ? 'EDIT mode' : 'NEW mode')
+    console.log('[PDF Upload] File:', pdfFile?.name, pdfFile?.type, pdfFile?.size)
     try {
       if (isEdit) {
         const updates: Record<string, unknown> = { title: fTitle.trim(), isFreePreview: fFree }
         if (pdfFile) {
+          console.log('[PDF Upload] Step 1 — Getting presigned URL from /api/upload/presigned')
           const presigned = await api.post('/upload/presigned', {
             fileName: pdfFile.name, contentType: pdfFile.type, folder: 'materials',
           })
+          console.log('[PDF Upload] Step 1 ✓ Presigned response:', presigned.data)
+          console.log('[PDF Upload] Step 2 — Uploading to R2 via XHR')
           await uploadWithXHR(presigned.data.url, pdfFile)
+          console.log('[PDF Upload] Step 2 ✓ XHR upload done')
           updates.pdfKey = presigned.data.key
         }
-        await api.put(`/lessons/${targetLessonId}`, updates)
+        console.log('[PDF Upload] Step 3 — Saving lesson updates:', updates)
+        const saveRes = await api.put(`/lessons/${targetLessonId}`, updates)
+        console.log('[PDF Upload] Step 3 ✓ Lesson saved:', saveRes.data)
         showToast(pdfFile ? 'PDF replaced.' : 'Lesson updated.')
       } else {
         // 1. Get R2 presigned URL
+        console.log('[PDF Upload] Step 1 — Getting presigned URL from /api/upload/presigned')
         const presigned = await api.post('/upload/presigned', {
           fileName: pdfFile!.name, contentType: pdfFile!.type, folder: 'materials',
         })
         const { url, key } = presigned.data
+        console.log('[PDF Upload] Step 1 ✓ Presigned response:', presigned.data)
         // 2. Upload to R2
+        console.log('[PDF Upload] Step 2 — Uploading to R2 via XHR')
         await uploadWithXHR(url, pdfFile!)
+        console.log('[PDF Upload] Step 2 ✓ XHR upload done. Key:', key)
         // 3. Create lesson
+        console.log('[PDF Upload] Step 3 — Creating lesson in DB')
         const lessonRes = await api.post(`/modules/${targetMod}/lessons`, { title: fTitle.trim(), type: 'PDF', isFreePreview: fFree })
         const lessonId: string = lessonRes.data.lesson.id
+        console.log('[PDF Upload] Step 3 ✓ Lesson created, id:', lessonId)
         // 4. Attach pdfKey
-        await api.put(`/lessons/${lessonId}`, { pdfKey: key })
+        console.log('[PDF Upload] Step 4 — Attaching pdfKey to lesson')
+        const attachRes = await api.put(`/lessons/${lessonId}`, { pdfKey: key })
+        console.log('[PDF Upload] Step 4 ✓ pdfKey attached:', attachRes.data)
         showToast('PDF lesson created.')
       }
       qc.invalidateQueries(['curriculum', id])
       close()
     } catch (e: any) {
+      console.error('[PDF Upload] FAILED at some step:', e)
       setUploadError(apiErrMsg(e))
     } finally {
       setUploading(false)
@@ -410,7 +443,12 @@ export default function CurriculumPage() {
     if (modal === 'uploadVideo')   return submitVideoUpload()
     if (modal === 'uploadPdf')     return submitPdfUpload()
     if (modal === 'addQuiz')       return submitQuiz()
-    // addLesson / scheduleLive / addAssignment
+    // addLesson — route by selected type
+    if (modal === 'addLesson') {
+      if (fType === 'PDF')   return submitPdfUpload()
+      if (fType === 'VIDEO') return submitVideoUpload()
+      if (fType === 'QUIZ')  return submitQuiz()
+    }
     submitAddLesson()
   }
 

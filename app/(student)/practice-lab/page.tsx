@@ -5,6 +5,15 @@ import Link from 'next/link'
 import StudentLayout from '@/components/layouts/StudentLayout'
 import api from '@/lib/api'
 
+const ICON_MAP: Record<string, string> = {
+  CLIENT_INTERVIEW:   'tabler-briefcase',
+  CASE_DRAFTING:      'tabler-edit',
+  CONTRACT_DRAFTING:  'tabler-clipboard-text',
+  MOOT_COURT:         'tabler-microphone',
+  LEGAL_RESEARCH:     'tabler-search',
+  COURTROOM_ARGUMENT: 'tabler-scale',
+}
+
 export default function PracticeLabPage() {
   const { data, isLoading } = useQuery('scenarios', () =>
     api.get('/practice-lab/scenarios').then((r) => r.data)
@@ -40,7 +49,7 @@ export default function PracticeLabPage() {
                 <div className="card-body">
                   <div className="d-flex align-items-start gap-3 mb-3">
                     <div className="avatar bg-label-primary rounded flex-shrink-0">
-                      <i className="ti tabler-flask avatar-initial" style={{ fontSize: 16 }} />
+                      <i className={`ti ${ICON_MAP[s.moduleType] ?? 'tabler-flask'} avatar-initial`} style={{ fontSize: 16 }} />
                     </div>
                     <div>
                       <h6 className="mb-1">{s.title}</h6>

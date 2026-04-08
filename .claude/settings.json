@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx prisma:*)"
+      "Bash(npx prisma:*)",
+      "Bash(mkdir -p /Users/ananthu/LMS/ledxElearn/app/api/admin/practice-lab/\\\\[moduleType\\\\]/toggle)",
+      "Bash(mkdir -p /Users/ananthu/LMS/ledxElearn/app/api/admin/practice-lab/\\\\[moduleType\\\\]/scenarios)",
+      "Bash(mkdir -p /Users/ananthu/LMS/ledxElearn/app/api/admin/practice-lab/\\\\[moduleType\\\\]/scenarios/\\\\[id\\\\])"
     ],
     "additionalDirectories": [
       "/Users/ananthu/LMS/full-version/assets/vendor/css/pages",
@@ -13,7 +16,9 @@
       "/Users/ananthu/LMS/ledxElearn/app/api/courses/[id]",
       "/Users/ananthu/LMS/ledxElearn/app/api/lessons/[id]",
       "/Users/ananthu/LMS/ledxElearn/app/api/admin/tutors",
-      "/Users/ananthu/LMS/ledxElearn/app/api/admin/announcements"
+      "/Users/ananthu/LMS/ledxElearn/app/api/admin/announcements",
+      "/Users/ananthu/LMS/ledxElearn/app/api/public/[slug]/courses",
+      "/Users/ananthu/LMS/ledxElearn/app/(admin)/admin/practice-lab/[moduleId]"
     ]
   }
 }

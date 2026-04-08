@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: '/tutor/doubts',       icon: 'tabler-help-circle', label: 'Student Doubts'   },
   { href: '/tutor/assignments',  icon: 'tabler-notes',       label: 'Assignments'      },
   { href: '/tutor/practice-lab', icon: 'tabler-flask',       label: 'Practice Lab'     },
+  { href: '/tutor/students',     icon: 'tabler-users',       label: 'Students'         },
 ]
 
 function NavItem({ href, icon, label }: { href: string; icon: string; label: string }) {
