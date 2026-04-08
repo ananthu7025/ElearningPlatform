@@ -7,14 +7,6 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   try {
     const user = await requireRole('ADMIN', 'TUTOR', 'STUDENT')
 
-    // Students must be enrolled in the course
-    if (user.role === 'STUDENT') {
-      const enrollment = await prisma.enrollment.findFirst({
-        where: { courseId: params.id, studentId: user.userId },
-      })
-      if (!enrollment) return errorResponse('FORBIDDEN', 'Not enrolled in this course', 403)
-    }
-
     const course = await prisma.course.findFirst({
       where: { id: params.id, instituteId: user.instituteId! },
       include: {

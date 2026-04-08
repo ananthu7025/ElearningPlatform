@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import Link from 'next/link'
+import Script from 'next/script'
 import StudentLayout from '@/components/layouts/StudentLayout'
 import api from '@/lib/api'
 
@@ -43,7 +44,51 @@ export default function CourseBrowsePage() {
   // Enrollment mutation
   const enroll = useMutation(
     (courseId: string) => api.post('/payments/create-order', { courseId }),
-    { onSuccess: () => qc.invalidateQueries('myEnrollments') }
+    {
+      onSuccess: (res) => {
+        const data = res.data
+        if (data.enrolled) {
+          qc.invalidateQueries('myEnrollments')
+          alert('Successfully enrolled in the course!')
+          return
+        }
+
+        // Paid course — Open Razorpay
+        if (data.orderId) {
+          const options = {
+            key: data.keyId,
+            amount: data.amount,
+            currency: data.currency,
+            name: 'LexEd Learning',
+            description: 'Course Enrollment',
+            order_id: data.orderId,
+            handler: async (response: any) => {
+              try {
+                await api.post('/payments/verify', {
+                  ...response,
+                  courseId: data.courseId,
+                  amount: data.finalAmount,
+                })
+                qc.invalidateQueries('myEnrollments')
+                alert('Payment successful! You are now enrolled.')
+              } catch (err) {
+                alert('Payment verification failed. Please contact support.')
+              }
+            },
+            prefill: {
+              email: '', // could fill from user store
+            },
+            theme: { color: '#7367f0' },
+          }
+          const rzp = new (window as any).Razorpay(options)
+          rzp.open()
+        }
+      },
+      onError: (err: any) => {
+        const msg = err.response?.data?.error?.message || 'Failed to initiate enrollment.'
+        alert(msg)
+      }
+    }
   )
 
   // Reset Progress mutation
@@ -79,6 +124,7 @@ export default function CourseBrowsePage() {
 
   return (
     <StudentLayout>
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       <div className="app-academy">
         
         {/* ── Hero Banner ── */}
@@ -185,12 +231,15 @@ export default function CourseBrowsePage() {
                         {/* Thumbnail */}
                         <div className="rounded-2 text-center mb-4 overflow-hidden" style={{ height: 160 }}>
                           <Link href={`/courses/${c.id}`}>
-                            <img
-                              src={c.thumbnailUrl || '/vendor/img/elements/12.jpg'}
-                              alt={c.title}
-                              className="w-100 h-100"
-                              style={{ objectFit: 'cover' }}
-                            />
+                              <img
+                                src={c.thumbnailUrl || `/img/courses/${c.category.toLowerCase().replace(/\s+/g, '_')}.png`}
+                                alt={c.title}
+                                className="w-100 h-100"
+                                style={{ objectFit: 'cover' }}
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = '/vendor/img/elements/12.jpg' // fallback if specific category image doesn't exist
+                                }}
+                              />
                           </Link>
                         </div>
 
@@ -307,17 +356,17 @@ export default function CourseBrowsePage() {
               <div className="row g-6">
                 <div className="col-md-6 text-center">
                   <div className="rounded overflow-hidden mb-3" style={{ height: 120 }}>
-                    <img src="/vendor/img/elements/16.jpg" className="w-100 h-100" style={{ objectFit: 'cover' }} alt="promo" />
+                    <img src="/img/courses/criminal_law.png" className="w-100 h-100" style={{ objectFit: 'cover' }} alt="promo" />
                   </div>
                   <h6 className="mb-2">Criminal Law — Free Intro</h6>
                   <p className="text-body-secondary small">Watch the first 3 lessons of Criminal Law Fundamentals for free.</p>
                 </div>
                 <div className="col-md-6 text-center">
                   <div className="rounded overflow-hidden mb-3" style={{ height: 120 }}>
-                    <img src="/vendor/img/elements/19.jpg" className="w-100 h-100" style={{ objectFit: 'cover' }} alt="promo" />
+                    <img src="/img/courses/corporate_law.png" className="w-100 h-100" style={{ objectFit: 'cover' }} alt="promo" />
                   </div>
-                  <h6 className="mb-2">CLAT Strategy Session</h6>
-                  <p className="text-body-secondary small">A free strategy session covering CLAT exam pattern and tips.</p>
+                  <h6 className="mb-2">Corporate Law Insider</h6>
+                  <p className="text-body-secondary small">A free strategy session covering corporate legal practice.</p>
                 </div>
               </div>
             </div>

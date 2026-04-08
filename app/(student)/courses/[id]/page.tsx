@@ -22,7 +22,8 @@ export default function CourseDetailPage() {
   )
 
   const { data: progressData } = useQuery(['courseProgress', id], () =>
-    api.get(`/enrollments/${id}/progress`).then((r) => r.data)
+    api.get(`/enrollments/${id}/progress`).then((r) => r.data).catch(() => ({ progress: [] })),
+    { retry: false }
   )
 
   const modules  = curriculumData?.modules ?? []
