@@ -26,7 +26,7 @@ export default function QuizLessonPage() {
   const [currentIdx, setCurrentIdx] = useState(0)
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [flagged, setFlagged] = useState<Set<number>>(new Set())
-  const [timeLeft, setTimeLeft] = useState(0)
+  const [timeLeft, setTimeLeft] = useState<number | null>(null)
   const [results, setResults] = useState<any>(null)
   const [showConfirm, setShowConfirm] = useState(false)
 
@@ -38,16 +38,16 @@ export default function QuizLessonPage() {
 
   // Timer logic
   useEffect(() => {
-    if (isStarted && quiz?.timeLimitMinutes) {
+    if (isStarted && quiz?.timeLimitMinutes && timeLeft === null) {
       setTimeLeft(quiz.timeLimitMinutes * 60)
     }
-  }, [isStarted, quiz?.timeLimitMinutes])
+  }, [isStarted, quiz?.timeLimitMinutes, timeLeft])
 
   useEffect(() => {
-    if (isStarted && timeLeft > 0 && !results) {
-      const t = setInterval(() => setTimeLeft(v => v - 1), 1000)
+    if (isStarted && timeLeft !== null && timeLeft > 0 && !results) {
+      const t = setInterval(() => setTimeLeft(v => (v !== null ? v - 1 : null)), 1000)
       return () => clearInterval(t)
-    } else if (timeLeft === 0 && isStarted && !results) {
+    } else if (isStarted && timeLeft === 0 && !results) {
       handleSubmit()
     }
   }, [isStarted, timeLeft, results])
@@ -184,7 +184,7 @@ export default function QuizLessonPage() {
           {quiz?.timeLimitMinutes && (
             <div className="d-flex align-items-center gap-2 bg-label-warning border border-warning border-opacity-25 rounded px-4 py-2">
                <i className="ti tabler-clock text-warning"></i>
-               <span className="fw-bold text-warning fs-5" style={{ fontFamily: 'monospace' }}>{formatTime(timeLeft)}</span>
+               <span className="fw-bold text-warning fs-5" style={{ fontFamily: 'monospace' }}>{formatTime(timeLeft ?? 0)}</span>
             </div>
           )}
 
@@ -314,7 +314,7 @@ export default function QuizLessonPage() {
 
                   <div className="bg-label-secondary rounded p-4 text-start mb-6">
                      <div className="d-flex justify-content-between small mb-1"><span>Answered</span><span className="fw-bold text-success">{Object.keys(answers).length}</span></div>
-                     <div className="d-flex justify-content-between small"><span>Time Remaining</span><span className="fw-bold text-warning">{formatTime(timeLeft)}</span></div>
+                     <div className="d-flex justify-content-between small"><span>Time Remaining</span><span className="fw-bold text-warning">{formatTime(timeLeft ?? 0)}</span></div>
                   </div>
 
                   <div className="d-flex gap-3 mt-4">
