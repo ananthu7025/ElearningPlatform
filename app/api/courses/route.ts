@@ -20,14 +20,16 @@ export async function GET(req: NextRequest) {
     const instituteId = user.instituteId!
 
     const { searchParams } = new URL(req.url)
-    const status  = searchParams.get('status') ?? undefined
-    const search  = searchParams.get('search') ?? undefined
-    const page    = Math.max(1, Number(searchParams.get('page') ?? 1))
-    const limit   = Math.min(50, Number(searchParams.get('limit') ?? 20))
+    const status    = searchParams.get('status') ?? undefined
+    const search    = searchParams.get('search') ?? undefined
+    const category  = searchParams.get('category') ?? undefined
+    const page      = Math.max(1, Number(searchParams.get('page') ?? 1))
+    const limit     = Math.min(50, Number(searchParams.get('limit') ?? 20))
 
     const where = {
       instituteId,
       ...(status ? { status: status as any } : {}),
+      ...(category ? { category } : {}),
       ...(user.role === 'TUTOR' ? { tutorId: user.userId } : {}),
       ...(search ? { title: { contains: search, mode: 'insensitive' as const } } : {}),
     }
