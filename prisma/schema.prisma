@@ -144,6 +144,7 @@ model User {
   liveClasses          LiveClass[]            @relation("TutorLiveClasses")
   enrollments          Enrollment[]
   quizAttempts         QuizAttempt[]
+  quizReviews          QuizAttempt[]          @relation("TutorQuizReviews")
   submissions          AssignmentSubmission[]
   doubtsAsked          Doubt[]                @relation("StudentDoubts")
   doubtsAnswered       Doubt[]                @relation("TutorAnswers")
@@ -255,10 +256,15 @@ model QuizAttempt {
   quizId           String
   quiz             Quiz     @relation(fields: [quizId], references: [id])
   answers          Json
-  score            Int
+  score            Int      // Calculated score (MCQ auto-graded, Short Answer might need manual override)
   passed           Boolean
   timeTakenSeconds Int?
   xpEarned         Int      @default(0)
+  status           String   @default("submitted") // submitted, reviewed
+  tutorFeedback    String?  @db.Text
+  tutorId          String?
+  tutor            User?    @relation("TutorQuizReviews", fields: [tutorId], references: [id])
+  reviewedAt       DateTime?
   takenAt          DateTime @default(now())
 
   @@index([studentId, quizId])

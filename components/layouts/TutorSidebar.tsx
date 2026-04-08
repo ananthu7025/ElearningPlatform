@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: '/tutor/live-classes', icon: 'tabler-video',       label: 'Live Classes'     },
   { href: '/tutor/doubts',       icon: 'tabler-help-circle', label: 'Student Doubts'   },
   { href: '/tutor/assignments',  icon: 'tabler-notes',       label: 'Assignments'      },
+  { href: '/tutor/quizzes',      icon: 'tabler-checklist',   label: 'Quiz Attempts'    },
   { href: '/tutor/practice-lab', icon: 'tabler-flask',       label: 'Practice Lab'     },
   { href: '/tutor/students',     icon: 'tabler-users',       label: 'Students'         },
 ]
