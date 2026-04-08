@@ -52,18 +52,19 @@ export default function QuizLessonPage() {
     }
   }, [isStarted, timeLeft, results])
 
+  const submitAttempt = useMutation((payload: any) =>
+    api.post(`/lessons/${lessonId}/quiz/attempts`, payload),
+    { onSuccess: () => setResults({ submitted: true }) }
+  )
+
   const handleSubmit = () => {
     setShowConfirm(false)
-    let correct = 0
-    questions.forEach((q: any, i: number) => {
-      const userAns = (answers[i] || '').trim().toLowerCase()
-      const correctAns = (q.correctAnswer || '').trim().toLowerCase()
-      if (userAns === correctAns) correct++
+    const timeTaken = quiz?.timeLimitMinutes ? (quiz.timeLimitMinutes * 60 - (timeLeft ?? 0)) : 0
+    
+    submitAttempt.mutate({
+      answers: answers,
+      timeTakenSeconds: timeTaken
     })
-    const score = Math.round((correct / questions.length) * 100)
-    const passed = score >= (quiz?.passingScore ?? 60)
-    setResults({ score, correct, total: questions.length, passed })
-    if (passed) markComplete.mutate({ completed: true })
   }
 
   const formatTime = (s: number) => {
@@ -78,39 +79,39 @@ export default function QuizLessonPage() {
 
   if (!lesson) return <div className="alert alert-danger">Lesson not found</div>
 
-  // ─── Render: Results View ──────────────────────────────────────────────────
+  // ─── Render: Results View (Now "Submission Received" View) ─────────────────
   if (results) {
     return (
       <StudentLayout>
         <div className="mx-auto text-center" style={{ maxWidth: 600, marginTop: '10vh' }}>
-           <div className={`avatar avatar-xl bg-label-${results.passed ? 'success' : 'danger'} mx-auto mb-6 shadow-sm`}>
-              <i className={`ti tabler-${results.passed ? 'trophy' : 'alert-circle'} fs-1`}></i>
+           <div className={`avatar avatar-xl bg-label-primary mx-auto mb-6 shadow-sm`}>
+              <i className={`ti tabler-circle-check fs-1`}></i>
            </div>
-           <h2 className="fw-black text-heading mb-2">{results.passed ? 'Lesson Mastered!' : 'Keep Pushing!'}</h2>
-           <p className="fs-4 mb-6">Your Score: <span className={results.passed ? 'text-success' : 'text-danger'}>{results.score}%</span></p>
+           <h2 className="fw-black text-heading mb-2">Assessment Submitted!</h2>
+           <p className="fs-5 text-body-secondary mb-8 lh-base">
+             Your answers have been successfully recorded. This assessment requires manual evaluation by the course faculty.
+           </p>
            
-           <div className="card shadow-none border bg-body-tertiary mb-6">
-              <div className="card-body p-5">
-                 <div className="d-flex justify-content-between mb-2 small fw-bold text-heading">
-                    <span>Performance Summary</span>
-                    <span>{results.correct} / {results.total} correct</span>
+           <div className="card shadow-none border bg-body-tertiary mb-8">
+              <div className="card-body p-6">
+                 <div className="d-flex align-items-center gap-4 text-start mb-4">
+                    <div className="avatar avatar-sm bg-primary rounded"><i className="ti tabler-history fw-bold"></i></div>
+                    <div>
+                       <p className="small fw-black text-heading mb-0">Review in Progress</p>
+                       <p className="extra-small text-body-secondary mb-0">Typically reviewed within 24-48 hours</p>
+                    </div>
                  </div>
-                 <div className="progress rounded-pill bg-white mb-4" style={{ height: 8 }}>
-                    <div className={`progress-bar bg-${results.passed ? 'success' : 'danger'}`} style={{ width: `${results.score}%` }}></div>
-                 </div>
-                 <p className="extra-small text-body-secondary mb-0">
-                    {results.passed ? `Great job! You exceeded the required passing score of ${quiz?.passingScore}%.` : `You need at least ${quiz?.passingScore}% to pass this assessment.`}
+                 <hr className="my-4 opacity-10" />
+                 <p className="extra-small text-body-secondary mb-0 text-start">
+                    You will receive a notification on your dashboard and via email once your tutor has graded your submission.
                  </p>
               </div>
            </div>
 
            <div className="d-flex gap-3 justify-content-center">
-              {!results.passed && (
-                <button className="btn btn-primary px-10 py-3 fw-bold shadow-sm" onClick={() => { setResults(null); setAnswers({}); setTimeLeft(0); setIsStarted(false); setCurrentIdx(0); }}>
-                  Try Again
-                </button>
-              )}
-              <Link href={`/courses/${courseId}`} className="btn btn-outline-secondary px-10 py-3 fw-bold">Return to Course</Link>
+              <Link href={`/courses/${courseId}`} className="btn btn-primary px-12 py-3 fw-bold shadow-sm">
+                Return to Course Curriculum
+              </Link>
            </div>
         </div>
       </StudentLayout>

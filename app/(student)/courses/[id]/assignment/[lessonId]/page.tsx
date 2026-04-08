@@ -26,6 +26,14 @@ export default function AssignmentLessonPage() {
     { onSuccess: () => qc.invalidateQueries(['courseProgress', courseId]) }
   )
 
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [response, setResponse] = useState('')
+
+  const submitAssignment = useMutation((payload: any) =>
+    api.post(`/assignments/${assignment?.id}/submissions`, payload),
+    { onSuccess: () => setIsSubmitted(true) }
+  )
+
   if (isLessonLoading) return (
     <div className="d-flex justify-content-center py-10"><div className="spinner-border text-primary" /></div>
   )
@@ -33,6 +41,46 @@ export default function AssignmentLessonPage() {
   if (!lesson) return <div className="alert alert-danger">Assignment not found</div>
 
   const isReviewed = false // Logic for reviewed state
+
+  // ─── Render: Submission Success View ──────────────────────────────────────
+  if (isSubmitted) {
+    return (
+      <StudentLayout>
+        <div className="mx-auto text-center" style={{ maxWidth: 600, marginTop: '10vh' }}>
+           <div className={`avatar avatar-xl bg-label-primary mx-auto mb-6 shadow-sm`}>
+              <i className={`ti tabler-cloud-check fs-1`}></i>
+           </div>
+           <h2 className="fw-black text-heading mb-2">Assignment Received!</h2>
+           <p className="fs-5 text-body-secondary mb-8 lh-base">
+             Your files and response have been uploaded successfully. This task will now be queued for manual review by our instructional team.
+           </p>
+           
+           <div className="card shadow-sm border-0 bg-body-tertiary mb-8">
+              <div className="card-body p-6">
+                 <div className="d-flex align-items-center gap-4 text-start mb-4">
+                    <div className="avatar avatar-sm bg-primary rounded"><i className="ti tabler-certificate fw-bold"></i></div>
+                    <div>
+                       <p className="small fw-black text-heading mb-0">Grading Pending</p>
+                       <p className="extra-small text-body-secondary mb-0">Tutors typically provide feedback within 3-5 business days.</p>
+                    </div>
+                 </div>
+                 <hr className="my-4 opacity-10" />
+                 <div className="d-flex justify-content-between extra-small text-body-secondary">
+                    <span>Submission ID: {lessonId.slice(0,8).toUpperCase()}</span>
+                    <span>Status: Awaiting Review</span>
+                 </div>
+              </div>
+           </div>
+
+           <div className="d-flex gap-3 justify-content-center">
+              <Link href={`/courses/${courseId}`} className="btn btn-primary px-12 py-3 fw-bold shadow-sm">
+                Back to Curriculum
+              </Link>
+           </div>
+        </div>
+      </StudentLayout>
+    )
+  }
 
   return (
     <StudentLayout>
@@ -142,6 +190,8 @@ export default function AssignmentLessonPage() {
                            className="form-control border-0 shadow-none p-5 small lh-base" 
                            style={{ minHeight: 240, fontFamily: 'serif' }} 
                            placeholder="Type your structured case brief here..." 
+                           value={response}
+                           onChange={(e) => setResponse(e.target.value)}
                         />
                         <div className="bg-label-secondary px-4 py-2 border-top extra-small text-body-secondary d-flex justify-content-between">
                            <span>Recommended word count: 500 - 800 words</span>
@@ -163,10 +213,12 @@ export default function AssignmentLessonPage() {
                <div className="card-footer bg-label-secondary border-top p-5 d-flex gap-3 justify-content-center">
                   <button 
                      className="btn btn-primary px-10 py-3 fw-black shadow-sm"
-                     onClick={() => markComplete.mutate({ completed: true })}
-                     disabled={markComplete.isLoading}
+                     onClick={() => submitAssignment.mutate({ content: response })}
+                     disabled={submitAssignment.isLoading || !response.trim()}
                   >
-                     {markComplete.isLoading ? 'Uploading...' : 'Submit Assignment'}
+                     {submitAssignment.isLoading ? (
+                        <div className="spinner-border spinner-border-sm me-2" role="status"></div>
+                     ) : 'Submit Assignment'}
                   </button>
                   <button className="btn btn-outline-secondary px-6">Save Draft</button>
                </div>
