@@ -232,12 +232,14 @@ export default function CourseBrowsePage() {
                         <div className="rounded-2 text-center mb-4 overflow-hidden" style={{ height: 160 }}>
                           <Link href={`/courses/${c.id}`}>
                               <img
-                                src={c.thumbnailUrl || `/img/courses/${c.category.toLowerCase().replace(/\s+/g, '_')}.png`}
+                                src={c.thumbnailUrl || (['Criminal Law', 'Constitutional Law', 'Corporate Law', 'Exam Prep'].includes(c.category) 
+                                  ? `/img/courses/${c.category.toLowerCase().replace(/\s+/g, '_')}.png` 
+                                  : '/img/courses/criminal_law.png')}
                                 alt={c.title}
                                 className="w-100 h-100"
                                 style={{ objectFit: 'cover' }}
                                 onError={(e) => {
-                                  (e.target as HTMLImageElement).src = '/vendor/img/elements/12.jpg' // fallback if specific category image doesn't exist
+                                  (e.target as HTMLImageElement).src = '/img/courses/criminal_law.png'
                                 }}
                               />
                           </Link>
@@ -287,13 +289,12 @@ export default function CourseBrowsePage() {
                                 </Link>
                               </>
                             ) : (
-                              <button
+                              <Link
+                                href={`/courses/${c.id}`}
                                 className="btn btn-primary w-100"
-                                onClick={() => enroll.mutate(c.id)}
-                                disabled={enroll.isLoading}
                               >
                                 {c.price == 0 ? 'Enroll Free' : `Buy Now - ₹${Number(c.price).toLocaleString()}`}
-                              </button>
+                              </Link>
                             )}
                           </div>
                         </div>

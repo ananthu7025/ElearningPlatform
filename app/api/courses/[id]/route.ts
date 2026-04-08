@@ -29,7 +29,7 @@ async function getCourse(id: string, instituteId: string) {
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const user = await requireRole('ADMIN', 'TUTOR')
+    const user = await requireRole('ADMIN', 'TUTOR', 'STUDENT')
     const course = await getCourse(params.id, user.instituteId!)
     if (!course) return errorResponse('NOT_FOUND', 'Course not found', 404)
 
