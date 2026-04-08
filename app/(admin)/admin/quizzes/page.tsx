@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useQuery } from 'react-query'
+import Image from 'next/image'
 import AdminLayout from '@/components/layouts/AdminLayout'
 import QuizReviewModal from '@/components/tutor/QuizReviewModal'
 import { format } from 'date-fns'
@@ -17,37 +18,61 @@ export default function AdminQuizAttemptsPage() {
   })
 
   return (
-    <AdminLayout title="Quiz Attempts" breadcrumb="Admin / Quiz Attempts">
-      <div className="card shadow-sm border-0">
-        <div className="card-header d-flex justify-content-between align-items-center border-bottom">
-          <h5 className="mb-0 fw-bold text-heading">Student Quiz Submissions</h5>
-          <div className="d-flex gap-2">
+    <AdminLayout title="Quiz Submissions" breadcrumb="Admin / Quiz Submissions">
+      
+      {/* ── Hero Banner ── */}
+      <div className="card shadow-none border p-0 mb-6 overflow-hidden bg-primary-subtle">
+        <div className="card-body d-flex flex-column flex-md-row justify-content-between p-0">
+          <div className="d-none d-md-flex align-items-end ps-6 pb-0" style={{ minWidth: 90 }}>
+            <Image src="/img/illustrations/bulb-light.png" alt="" width={90} height={90} style={{ objectFit: 'contain' }} />
+          </div>
+          <div className="flex-grow-1 d-flex align-items-center flex-column text-md-center px-6 py-8">
+            <h4 className="mb-2 text-heading fw-bold">
+              Institute-Wide Assessments<br />
+              <span className="text-primary text-nowrap">Review submissions across all courses.</span>
+            </h4>
+            <p className="mb-0 text-body">You have access to all {data?.attempts?.length || 0} student attempts for centralized quality control.</p>
+          </div>
+          <div className="d-none d-md-flex align-items-end justify-content-end pe-0" style={{ minWidth: 120 }}>
+            <Image src="/img/illustrations/pencil-rocket.png" alt="" width={120} height={180} style={{ objectFit: 'contain' }} />
+          </div>
+        </div>
+      </div>
+
+      <div className="card shadow-none border">
+        <div className="card-header border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div className="card-title mb-0">
+            <h5 className="mb-0">Global Quiz Attempts</h5>
+            <small className="text-body-secondary mt-1">Review student answers and provide specialized institutional feedback.</small>
+          </div>
+          <div className="d-flex gap-3">
             <select 
-              className="form-select w-px-200" 
+              className="form-select w-px-200 shadow-sm border-primary-subtle" 
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
-              <option value="">Filter by Status</option>
+              <option value="">All Statuses</option>
               <option value="submitted">Needs Review</option>
-              <option value="reviewed">Graded / Reviewed</option>
+              <option value="reviewed">Reviewed / Published</option>
             </select>
           </div>
         </div>
+
         <div className="table-responsive text-nowrap">
-          <table className="table table-hover">
-            <thead className="table-light">
+          <table className="table table-hover align-middle">
+            <thead className="table-light border-top">
               <tr>
-                <th className="fw-bold small text-uppercase" style={{ letterSpacing: '0.5px' }}>Student</th>
-                <th className="fw-bold small text-uppercase" style={{ letterSpacing: '0.5px' }}>Quiz Info</th>
-                <th className="fw-bold small text-uppercase" style={{ letterSpacing: '0.5px' }}>Score</th>
-                <th className="fw-bold small text-uppercase" style={{ letterSpacing: '0.5px' }}>Status</th>
-                <th className="fw-bold small text-uppercase" style={{ letterSpacing: '0.5px' }}>Submitted At</th>
-                <th className="fw-bold small text-uppercase" style={{ letterSpacing: '0.5px' }}>Action</th>
+                <th className="fw-bold small text-uppercase py-5">Student</th>
+                <th className="fw-bold small text-uppercase py-5">Quiz / Course</th>
+                <th className="fw-bold small text-uppercase py-5">Score</th>
+                <th className="fw-bold small text-uppercase py-5 text-center">Status</th>
+                <th className="fw-bold small text-uppercase py-5">Submitted At</th>
+                <th className="fw-bold small text-uppercase py-5 text-center">Action</th>
               </tr>
             </thead>
             <tbody className="table-border-bottom-0">
               {isLoading ? (
-                <tr><td colSpan={6} className="text-center py-10"><div className="spinner-border text-primary" /></td></tr>
+                <tr><td colSpan={6} className="text-center py-10"><div className="spinner-border spinner-border-sm text-primary" /></td></tr>
               ) : data?.attempts?.length === 0 ? (
                 <tr><td colSpan={6} className="text-center py-10 text-body-secondary">No submissions found.</td></tr>
               ) : (
@@ -59,46 +84,46 @@ export default function AdminQuizAttemptsPage() {
                           {attempt.student.avatarUrl ? (
                             <img src={attempt.student.avatarUrl} alt="Avatar" className="rounded-circle" />
                           ) : (
-                            <span className="avatar-initial rounded-circle bg-label-primary fw-bold">
-                              {attempt.student.name[0]}
+                            <span className="avatar-initial rounded-circle bg-label-primary fw-bold small">
+                              {attempt.student.name?.[0] || 'S'}
                             </span>
                           )}
                         </div>
-                        <div>
-                          <span className="fw-bold d-block text-heading small">{attempt.student.name}</span>
-                          <small className="text-muted" style={{ fontSize: 11 }}>{attempt.student.email}</small>
+                        <div className="d-flex flex-column">
+                          <span className="fw-bold text-heading mb-0 small">{attempt.student.name}</span>
+                          <small className="text-muted" style={{ fontSize: 10 }}>{attempt.student.email}</small>
                         </div>
                       </div>
                     </td>
                     <td>
-                      <div className="fw-medium text-heading small">{attempt.quiz.title}</div>
-                      <small className="text-body-secondary d-block" style={{ fontSize: 10 }}>{attempt.quiz.lesson.module.course.title}</small>
+                      <div className="fw-semibold text-heading small">{attempt.quiz.title}</div>
+                      <small className="text-body-secondary text-truncate d-block" style={{ maxWidth: 200, fontSize: 10 }}>{attempt.quiz.lesson.module.course.title}</small>
                     </td>
                     <td>
                       <div className="d-flex align-items-center gap-2">
-                        <div className="progress w-px-50" style={{ height: '4px' }}>
+                        <div className="progress w-px-50 shadow-none border-0" style={{ height: '4px', backgroundColor: '#eef0f2' }}>
                           <div className={`progress-bar bg-${attempt.passed ? 'success' : 'danger'}`} style={{ width: `${attempt.score}%` }} />
                         </div>
-                        <span className={`fw-bold text-${attempt.passed ? 'success' : 'danger'}`} style={{ fontSize: 12 }}>
+                        <span className={`fw-bold text-${attempt.passed ? 'success' : 'danger'}`} style={{ fontSize: 11 }}>
                           {attempt.score}%
                         </span>
                       </div>
                     </td>
-                    <td>
+                    <td className="text-center">
                       <span className={`badge rounded-pill bg-label-${attempt.status === 'reviewed' ? 'info' : 'warning'} px-3`} style={{ fontSize: 10 }}>
                         {attempt.status === 'reviewed' ? 'Reviewed' : 'Pending'}
                       </span>
                     </td>
                     <td>
-                      <div className="small text-heading">{format(new Date(attempt.takenAt), 'MMM dd, yyyy')}</div>
-                      <small className="text-muted" style={{ fontSize: 10 }}>{format(new Date(attempt.takenAt), 'p')}</small>
+                      <div className="text-heading small">{format(new Date(attempt.takenAt), 'MMM dd, yyyy')}</div>
+                      <small className="text-muted" style={{ fontSize: 10 }}>at {format(new Date(attempt.takenAt), 'p')}</small>
                     </td>
-                    <td>
+                    <td className="text-center">
                       <button 
-                        className="btn btn-sm btn-label-primary px-3 shadow-sm border"
+                        className={`btn btn-sm btn-label-${attempt.status === 'reviewed' ? 'secondary' : 'primary'} px-4 border shadow-sm`}
                         onClick={() => setSelectedAttemptId(attempt.id)}
                       >
-                        Review Work
+                        {attempt.status === 'reviewed' ? 'Re-review' : 'Grade / Review'}
                       </button>
                     </td>
                   </tr>
@@ -106,9 +131,6 @@ export default function AdminQuizAttemptsPage() {
               )}
             </tbody>
           </table>
-        </div>
-        <div className="card-footer border-top bg-light py-3">
-          <small className="text-muted">Showing {data?.attempts?.length || 0} total submissions</small>
         </div>
       </div>
 
