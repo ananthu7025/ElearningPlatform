@@ -19,9 +19,18 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
     const lesson = await prisma.lesson.findFirst({
       where: { id: params.id, module: { course: { instituteId: user.instituteId! } } },
-      include: { module: { select: { courseId: true } } },
+      include: {
+        module: { select: { courseId: true } },
+        quiz: {
+          include: { questions: { orderBy: { orderIndex: 'asc' } } }
+        },
+        assignment: true,
+      },
     })
     if (!lesson) return errorResponse('NOT_FOUND', 'Lesson not found', 404)
+
+    // Inject full PDF URL if key exists
+    const pdfUrl = lesson.pdfKey ? `${process.env.R2_PUBLIC_URL}/${lesson.pdfKey}` : null
 
     // Students must be enrolled
     if (user.role === 'STUDENT' && !lesson.isFreePreview) {
@@ -31,7 +40,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       if (!enrolled) return errorResponse('FORBIDDEN', 'Not enrolled', 403)
     }
 
-    return NextResponse.json({ lesson })
+    return NextResponse.json({ lesson, pdfUrl })
   } catch (e) {
     return handleRouteError(e)
   }
