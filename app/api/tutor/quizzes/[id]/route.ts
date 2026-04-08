@@ -8,14 +8,17 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await requireRole('TUTOR')
+    const user = await requireRole('TUTOR', 'ADMIN')
     const attempt = await prisma.quizAttempt.findFirst({
       where: {
         id: params.id,
         quiz: {
           lesson: {
             module: {
-              course: { tutorId: user.userId },
+              course: { 
+                instituteId: user.instituteId!,
+                ...(user.role === 'TUTOR' ? { tutorId: user.userId } : {}),
+              },
             },
           },
         },
@@ -55,7 +58,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await requireRole('TUTOR')
+    const user = await requireRole('TUTOR', 'ADMIN')
     const { score, feedback, status } = await req.json()
 
     const attempt = await prisma.quizAttempt.findFirst({
@@ -64,7 +67,10 @@ export async function PUT(
         quiz: {
           lesson: {
             module: {
-              course: { tutorId: user.userId },
+              course: { 
+                instituteId: user.instituteId!,
+                ...(user.role === 'TUTOR' ? { tutorId: user.userId } : {}),
+              },
             },
           },
         },
@@ -94,14 +100,14 @@ export async function PUT(
     const updatedAttempt = await prisma.quizAttempt.update({
       where: { id: params.id },
       data: {
-        score: score !== undefined ? score : attempt.score,
+        score: score !== undefined ? score : (attempt as any).score,
         tutorFeedback: feedback,
         status: status || 'reviewed',
         tutorId: user.userId,
         reviewedAt: new Date(),
-        passed: score !== undefined ? score >= attempt.quiz.passingScore : attempt.passed,
-      },
-    })
+        passed: score !== undefined ? score >= (attempt as any).quiz.passingScore : (attempt as any).passed,
+      } as any,
+    }) as any
 
     // Update lesson progress if reviewed and passed
     if (updatedAttempt.status === 'reviewed' && updatedAttempt.passed) {

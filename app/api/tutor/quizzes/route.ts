@@ -5,7 +5,7 @@ import { handleRouteError } from '@/lib/errors'
 
 export async function GET(req: Request) {
   try {
-    const user = await requireRole('TUTOR')
+    const user = await requireRole('TUTOR', 'ADMIN')
     const { searchParams } = new URL(req.url)
     const status = searchParams.get('status') // 'submitted' or 'reviewed'
     const courseId = searchParams.get('courseId')
@@ -16,8 +16,8 @@ export async function GET(req: Request) {
           lesson: {
             module: {
               course: {
-                tutorId: user.userId,
                 instituteId: user.instituteId!,
+                ...(user.role === 'TUTOR' ? { tutorId: user.userId } : {}),
                 ...(courseId ? { id: courseId } : {}),
               },
             },

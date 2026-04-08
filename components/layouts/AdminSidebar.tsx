@@ -20,6 +20,8 @@ const NAV_INSTITUTE: NavItem[] = [
   { href: '/admin/courses',      icon: 'tabler-book',           label: 'Courses'      },
   { href: '/admin/students',     icon: 'tabler-users',          label: 'Students'     },
   { href: '/admin/tutors',       icon: 'tabler-user-check',     label: 'Tutors'       },
+  { href: '/admin/assignments',  icon: 'tabler-notes',          label: 'Assignments'  },
+  { href: '/admin/quizzes',      icon: 'tabler-checklist',      label: 'Quiz Attempts'},
   { href: '/admin/live-classes', icon: 'tabler-video',          label: 'Live Classes', feature: 'live_classes'  },
   { href: '/admin/practice-lab', icon: 'tabler-flask',          label: 'Practice Lab', feature: 'practice_lab'  },
 ]

@@ -5,16 +5,16 @@ import { handleRouteError } from '@/lib/errors'
 
 export async function GET() {
   try {
-    const user = await requireRole('TUTOR')
+    const user = await requireRole('TUTOR', 'ADMIN')
 
-    // All assignments from this tutor's courses
+    // All assignments from institute (and tutor if applicable)
     const assignments = await prisma.assignment.findMany({
       where: {
         lesson: {
           module: {
             course: {
-              tutorId:     user.userId,
               instituteId: user.instituteId!,
+              ...(user.role === 'TUTOR' ? { tutorId: user.userId } : {}),
             },
           },
         },
