@@ -3,20 +3,22 @@
 import { useParams, useRouter } from 'next/navigation'
 import { useQuery } from 'react-query'
 import Link from 'next/link'
+import { useState } from 'react'
 import StudentLayout from '@/components/layouts/StudentLayout'
 import api from '@/lib/api'
 
-const LESSON_ICON: Record<string, { icon: string, color: string }> = {
-  VIDEO:      { icon: 'ti tabler-player-play', color: 'primary' },
-  TEXT:       { icon: 'ti tabler-file-text',  color: 'danger' },
-  QUIZ:       { icon: 'ti tabler-clipboard-check', color: 'warning' },
-  ASSIGNMENT: { icon: 'ti tabler-edit', color: 'info' },
-  LIVE:       { icon: 'ti tabler-video', color: 'success' },
+const TYPE_ICON_MAP: Record<string, { icon: string; color: string; route: string }> = {
+  VIDEO:      { icon: 'ti tabler-player-play', color: 'primary', route: 'lesson' },
+  PDF:        { icon: 'ti tabler-file-text',  color: 'danger', route: 'pdf' },
+  QUIZ:       { icon: 'ti tabler-clipboard-check', color: 'warning', route: 'quiz' },
+  LIVE:       { icon: 'ti tabler-video', color: 'success', route: 'live' },
+  ASSIGNMENT: { icon: 'ti tabler-edit', color: 'info', route: 'assignment' },
 }
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
+  const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({})
 
   // 1. Fetch Course metadata
   const { data: courseData, isLoading: isCourseLoading } = useQuery(['courseDetail', id], () =>
@@ -59,73 +61,146 @@ export default function CourseDetailPage() {
 
   if (!course) return <StudentLayout><div className="alert alert-danger">Course not found</div></StudentLayout>
 
-  // ─── Case 1: Enrolled (Show Curriculum Dashboard) ──────────────────────────
+  // ─── Case 1: Enrolled (High-Fidelity Learning Dashboard) ────────────────────
   if (isEnrolled) {
+    // Find the next lesson to continue
+    let nextLessonPath = '#'
+    for (const mod of modules) {
+      const next = mod.lessons.find((l: any) => !completedIds.has(l.id))
+      if (next) {
+        const typeInfo = TYPE_ICON_MAP[next.type] || TYPE_ICON_MAP.VIDEO
+        nextLessonPath = `/courses/${id}/${typeInfo.route}/${next.id}`
+        break
+      }
+    }
+
     return (
       <StudentLayout>
-        <div className="mx-auto" style={{ maxWidth: 900 }}>
-          <nav aria-label="breadcrumb" className="mb-4">
-            <ol className="breadcrumb">
-              <li className="breadcrumb-item"><Link href="/courses/browse">Course Catalog</Link></li>
-              <li className="breadcrumb-item active">{course.title}</li>
-            </ol>
-          </nav>
-
-          <div className="card mb-6 shadow-none border">
-            <div className="card-body">
-              <div className="d-flex align-items-center justify-content-between mb-2">
-                <h4 className="fw-bold mb-0">Continue Learning</h4>
-                <span className="badge bg-label-primary">{pct}% Completed</span>
+        <div className="mx-auto" style={{ maxWidth: 960 }}>
+          {/* Course header */}
+          <div className="card shadow-sm border-0 mb-6">
+            <div className="card-body p-5">
+              <div className="d-flex flex-column flex-md-row align-items-md-center gap-4">
+                <div className="flex-grow-1">
+                  <span className="badge bg-label-primary small mb-3">{course.category}</span>
+                  <h4 className="fw-bold text-heading mb-1">{course.title}</h4>
+                  <p className="small text-body-secondary mb-0">By {course.tutor?.name || 'Top Instructor'} · Updated {new Date(course.updatedAt).toLocaleDateString()}</p>
+                </div>
+                <Link
+                  href={nextLessonPath}
+                  className="btn btn-primary d-flex align-items-center gap-2 px-5 py-3 flex-shrink-0 fw-bold shadow-sm"
+                >
+                  <i className="ti tabler-player-play-filled"></i>
+                  {pct > 0 ? 'Continue Learning' : 'Start Learning'}
+                </Link>
               </div>
-              <p className="text-body-secondary mb-4">{completedLessons} of {totalLessons} lessons finished</p>
-              <div className="progress mb-2" style={{ height: 10 }}>
-                <div className={`progress-bar transition-all`} style={{ width: `${pct}%` }} />
+
+              {/* Progress Bar Section */}
+              <div className="mt-6 pt-6 border-top">
+                <div className="d-flex align-items-center justify-content-between small mb-3">
+                  <span className="text-heading fw-bold">Overall Course Progress</span>
+                  <span className="text-primary fw-black fs-5">{pct}%</span>
+                </div>
+                <div className="progress rounded-pill shadow-none bg-label-secondary" style={{ height: 10 }}>
+                  <div className="progress-bar bg-primary transition-all shadow-sm" role="progressbar" style={{ width: `${pct}%` }}></div>
+                </div>
+                <div className="d-flex align-items-center gap-3 mt-3 extra-small text-body-secondary">
+                  <span><i className="ti tabler-circle-check text-success me-1"></i>{completedLessons} / {totalLessons} lessons completed</span>
+                  <span>·</span>
+                  <span className="text-success fw-medium">On track</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="card shadow-none border">
-            <div className="card-header border-bottom">
-              <h5 className="mb-0">Course Content</h5>
-            </div>
-            <div className="list-group list-group-flush">
-              {modules.map((mod: any) => {
-                const modCompleted = mod.lessons.every((l: any) => completedIds.has(l.id))
-                return (
-                  <div key={mod.id}>
-                    <div className="list-group-item bg-body-tertiary px-4 py-3 d-flex align-items-center justify-content-between border-bottom">
-                      <div className="d-flex align-items-center gap-2">
-                        <i className="ti tabler-folder text-primary" />
-                        <span className="fw-bold">{mod.title}</span>
+          {/* Tab Selection UI */}
+          <div className="d-inline-flex gap-1 bg-white rounded-pill border shadow-sm p-1 mb-6">
+            {['Curriculum', 'Resources', 'Student Hub'].map((tab, i) => (
+              <button
+                key={tab}
+                className={`btn btn-sm px-5 py-2 rounded-pill small fw-bold transition-all ${
+                  i === 0 ? 'btn-primary shadow-sm' : 'btn-text-secondary border-0'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          {/* Modules Accordion */}
+          <div className="d-flex flex-column gap-4">
+            {modules.map((mod: any, mi: number) => {
+              const isExpanded = expandedModules[mod.id] ?? true
+              const modProgress = mod.lessons.length > 0 ? Math.round((mod.lessons.filter((l: any) => completedIds.has(l.id)).length / mod.lessons.length) * 100) : 0
+              
+              return (
+                <div key={mod.id} className="card shadow-sm border-0 overflow-hidden">
+                  {/* Module Header */}
+                  <div 
+                    className="card-header bg-label-secondary d-flex align-items-center justify-content-between py-4 px-5 cursor-pointer hover-bg-light transition-all"
+                    onClick={() => setExpandedModules(prev => ({ ...prev, [mod.id]: !isExpanded }))}
+                  >
+                    <div className="d-flex align-items-center gap-4">
+                      <i className={`ti tabler-chevron-down text-body-secondary transition-all ${!isExpanded ? 'rotate-n90' : ''}`}></i>
+                      <div>
+                        <p className="fw-black text-heading mb-1">{mod.title}</p>
+                        <div className="d-flex align-items-center gap-3 mt-1">
+                          <span className="extra-small text-body-secondary fw-medium">{mod.lessons.length} lessons · {Math.floor(mod.lessons.length * 15)} mins Est.</span>
+                        </div>
                       </div>
-                      <small className="text-body-secondary">{mod.lessons.length} lessons</small>
                     </div>
-                    {mod.lessons.map((lesson: any) => {
-                      const done = completedIds.has(lesson.id)
-                      const iconInfo = LESSON_ICON[lesson.type] || { icon: 'ti tabler-file', color: 'secondary' }
-                      return (
-                        <Link
-                          key={lesson.id}
-                          href={`/learn/${lesson.id}`}
-                          className={`list-group-item list-group-item-action px-5 py-3 d-flex align-items-center gap-3 ${done ? 'bg-label-success opacity-75' : ''}`}
-                        >
-                          <div className={`avatar avatar-xs rounded bg-label-${done ? 'success' : iconInfo.color} d-flex align-items-center justify-content-center`}>
-                            <i className={`${done ? 'ti tabler-check' : iconInfo.icon} extra-small`} />
-                          </div>
-                          <span className="flex-grow-1 text-heading">{lesson.title}</span>
-                          {lesson.durationSeconds > 0 && (
-                            <small className="text-body-secondary">{Math.round(lesson.durationSeconds / 60)}m</small>
-                          )}
-                          <i className="ti tabler-chevron-right text-body-secondary" />
-                        </Link>
-                      )
-                    })}
+                    {/* Module Progress Mini */}
+                    <div className="d-none d-sm-flex align-items-center gap-3">
+                      <div className="progress rounded-pill bg-white" style={{ width: 100, height: 6 }}>
+                        <div className="progress-bar bg-success shadow-none" role="progressbar" style={{ width: `${modProgress}%` }}></div>
+                      </div>
+                      <span className="extra-small fw-bold text-body-secondary">{modProgress}%</span>
+                    </div>
                   </div>
-                )
-              })}
-            </div>
+
+                  {/* Lessons List in Module */}
+                  {isExpanded && (
+                    <div className="card-body p-0 border-top">
+                      {mod.lessons.map((lesson: any, li: number) => {
+                        const isDone = completedIds.has(lesson.id)
+                        const typeInfo = TYPE_ICON_MAP[lesson.type] || TYPE_ICON_MAP.VIDEO
+                        const lessonUrl = `/courses/${id}/${typeInfo.route}/${lesson.id}`
+
+                        return (
+                          <Link
+                            key={lesson.id}
+                            href={lessonUrl}
+                            className="d-flex align-items-center gap-4 px-6 py-4 border-bottom text-decoration-none hover-bg-light transition-all lesson-row"
+                          >
+                            <div className={`avatar avatar-sm rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 ${isDone ? 'bg-label-success' : `bg-label-${typeInfo.color}`}`}>
+                              <i className={`${isDone ? 'ti tabler-check' : typeInfo.icon} small`}></i>
+                            </div>
+                            <div className="flex-grow-1">
+                               <span className={`d-block small fw-bold ${isDone ? 'text-body-secondary text-decoration-line-through' : 'text-heading'}`}>
+                                 {lesson.title}
+                               </span>
+                               <span className="extra-small text-body-secondary opacity-75">{lesson.type} • {lesson.durationSeconds ? `${Math.round(lesson.durationSeconds / 60)} min` : '5 min read'}</span>
+                            </div>
+                            {isDone ? (
+                              <i className="ti tabler-circle-check-filled text-success fs-4"></i>
+                            ) : (
+                              <i className="ti tabler-chevron-right text-body-tertiary"></i>
+                            )}
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
+        <style jsx>{`
+          .rotate-n90 { transform: rotate(-90deg); }
+          .hover-bg-light:hover { background-color: rgba(0,0,0,0.02) !important; }
+          .lesson-row:last-child { border-bottom: none !important; }
+        `}</style>
       </StudentLayout>
     )
   }
@@ -150,7 +225,6 @@ export default function CourseDetailPage() {
               {course.description}
             </p>
 
-            {/* Mock Rating & Stats */}
             <div className="d-flex align-items-center gap-4 mb-4 flex-wrap">
               <div className="d-flex align-items-center gap-2">
                 <div className="text-warning d-flex gap-1">
@@ -172,7 +246,6 @@ export default function CourseDetailPage() {
               <span><i className="ti tabler-world me-1"></i> English + Hindi</span>
             </div>
 
-            {/* Quick Stats Bar */}
             <div className="d-flex flex-wrap gap-4 pt-4 border-top">
               {[
                 { label: `${totalLessons} Lessons`, icon: 'ti tabler-book-2' },
@@ -188,10 +261,8 @@ export default function CourseDetailPage() {
             </div>
           </div>
 
-          {/* Sticky Sidebar */}
           <div className="col-lg-4">
             <div className="card shadow-sm position-sticky" style={{ top: 100 }}>
-              {/* Thumbnail/Video Preview */}
               <div className="rounded-top overflow-hidden position-relative" style={{ height: 200, background: '#eee' }}>
                 <img 
                   src={course.thumbnailUrl || `/img/courses/${course.category.toLowerCase().replace(/\s+/g, '_')}.png`} 
@@ -242,7 +313,6 @@ export default function CourseDetailPage() {
           </div>
         </div>
 
-        {/* Course Curriculum Preview */}
         <div className="row g-6">
           <div className="col-lg-8">
             <div className="card shadow-none border mb-6">
@@ -260,7 +330,7 @@ export default function CourseDetailPage() {
                       </div>
                       <div className="bg-white">
                          {mod.lessons.map((lesson: any) => {
-                           const iconInfo = LESSON_ICON[lesson.type] || { icon: 'tabler-file', color: 'secondary' }
+                           const iconInfo = TYPE_ICON_MAP[lesson.type] || { icon: 'tabler-file', color: 'secondary' }
                            return (
                              <div key={lesson.id} className="px-4 py-3 border-top d-flex align-items-center gap-3">
                                <i className={`${iconInfo.icon} text-${iconInfo.color} small`}></i>
@@ -280,7 +350,6 @@ export default function CourseDetailPage() {
               </div>
             </div>
 
-            {/* Instructor Section */}
             <div className="card shadow-none border mb-6">
                <div className="card-body p-5">
                  <h5 className="fw-bold text-heading mb-4">Your Instructor</h5>
