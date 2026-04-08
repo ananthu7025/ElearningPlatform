@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { useQuery } from 'react-query'
 import Image from 'next/image'
+import Link from 'next/link'
 import TutorLayout from '@/components/layouts/TutorLayout'
-import QuizReviewModal from '@/components/tutor/QuizReviewModal'
 import { format } from 'date-fns'
 import api from '@/lib/api'
 
@@ -119,12 +119,12 @@ export default function QuizAttemptsPage() {
                       <small className="text-muted" style={{ fontSize: 10 }}>at {format(new Date(attempt.takenAt), 'p')}</small>
                     </td>
                     <td className="text-center">
-                      <button 
+                      <Link 
+                        href={`/tutor/quizzes/${attempt.id}`}
                         className={`btn btn-sm btn-label-${attempt.status === 'reviewed' ? 'secondary' : 'primary'} px-4`}
-                        onClick={() => setSelectedAttemptId(attempt.id)}
                       >
                         {attempt.status === 'reviewed' ? 'Re-grade' : 'Grade / Review'}
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))
@@ -136,17 +136,6 @@ export default function QuizAttemptsPage() {
           <small className="text-muted">Total {data?.attempts?.length || 0} student attempts found.</small>
         </div>
       </div>
-
-      {selectedAttemptId && (
-        <QuizReviewModal 
-          id={selectedAttemptId} 
-          onClose={() => setSelectedAttemptId(null)}
-          onSuccess={() => {
-            setSelectedAttemptId(null)
-            refetch()
-          }}
-        />
-      )}
     </TutorLayout>
   )
 }

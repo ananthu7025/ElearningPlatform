@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { useQuery } from 'react-query'
 import Image from 'next/image'
+import Link from 'next/link'
 import AdminLayout from '@/components/layouts/AdminLayout'
-import QuizReviewModal from '@/components/tutor/QuizReviewModal'
 import { format } from 'date-fns'
 import api from '@/lib/api'
 
@@ -119,12 +119,12 @@ export default function AdminQuizAttemptsPage() {
                       <small className="text-muted" style={{ fontSize: 10 }}>at {format(new Date(attempt.takenAt), 'p')}</small>
                     </td>
                     <td className="text-center">
-                      <button 
+                      <Link 
+                        href={`/admin/quizzes/${attempt.id}`}
                         className={`btn btn-sm btn-label-${attempt.status === 'reviewed' ? 'secondary' : 'primary'} px-4 border shadow-sm`}
-                        onClick={() => setSelectedAttemptId(attempt.id)}
                       >
                         {attempt.status === 'reviewed' ? 'Re-review' : 'Grade / Review'}
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))
@@ -133,17 +133,6 @@ export default function AdminQuizAttemptsPage() {
           </table>
         </div>
       </div>
-
-      {selectedAttemptId && (
-        <QuizReviewModal 
-          id={selectedAttemptId} 
-          onClose={() => setSelectedAttemptId(null)}
-          onSuccess={() => {
-            setSelectedAttemptId(null)
-            refetch()
-          }}
-        />
-      )}
     </AdminLayout>
   )
 }
