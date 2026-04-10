@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useQuery, useMutation } from 'react-query'
 import StudentLayout from '@/components/layouts/StudentLayout'
 import api from '@/lib/api'
+import ClientInterviewChat from '@/components/student/ClientInterviewChat'
 
 export default function ScenarioPage() {
   const { scenarioId } = useParams<{ scenarioId: string }>()
@@ -109,6 +110,8 @@ export default function ScenarioPage() {
         <div className="d-flex justify-content-center py-5"><div className="spinner-border text-primary" role="status" /></div>
       ) : !scenario ? (
         <div className="alert alert-danger">Scenario not found</div>
+      ) : scenario.moduleType === 'CLIENT_INTERVIEW' ? (
+        <ClientInterviewChat scenario={scenario} />
       ) : (
         <div className="row g-6">
           {/* ── Scenario ────────────────────────────────────────────── */}
