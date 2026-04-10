@@ -3,8 +3,58 @@ import { requireRole } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { handleRouteError, errorResponse } from '@/lib/errors'
 import { PracticeModuleType } from '@prisma/client'
+import { clientInterviewCreateSchema } from '@/lib/practiceLab/clientInterviewScenario'
 
 const VALID_TYPES = Object.values(PracticeModuleType)
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { moduleType: string } }
+) {
+  try {
+    const user = await requireRole('ADMIN')
+    const instituteId = user.instituteId!
+
+    const moduleType = params.moduleType as PracticeModuleType
+    if (!VALID_TYPES.includes(moduleType)) {
+      return errorResponse('VALIDATION', 'Invalid module type', 422)
+    }
+
+    if (moduleType !== PracticeModuleType.CLIENT_INTERVIEW) {
+      return errorResponse(
+        'VALIDATION',
+        'Creating scenarios for this module type is not enabled yet. Use Client Interview for now.',
+        422
+      )
+    }
+
+    const body = await req.json()
+    const parsed = clientInterviewCreateSchema.safeParse(body)
+    if (!parsed.success) {
+      return errorResponse('VALIDATION', parsed.error.flatten().fieldErrors as Record<string, unknown>, 422)
+    }
+
+    const scenario = await prisma.practiceScenario.create({
+      data: {
+        instituteId,
+        moduleType: PracticeModuleType.CLIENT_INTERVIEW,
+        title: parsed.data.title,
+        description: parsed.data.description,
+        difficulty: parsed.data.difficulty,
+        clientName: parsed.data.clientName ?? null,
+        caseType: parsed.data.caseType ?? null,
+        caseId: parsed.data.caseId ?? null,
+        content: parsed.data.content as object,
+        isPublished: parsed.data.isPublished ?? false,
+        tutorId: null,
+      },
+    })
+
+    return NextResponse.json({ scenario: { id: scenario.id } }, { status: 201 })
+  } catch (e) {
+    return handleRouteError(e)
+  }
+}
 
 export async function GET(
   req: NextRequest,

@@ -160,7 +160,16 @@ export default function AdminScenariosPage() {
             <h5 className="mb-0">Scenarios — {meta.title}</h5>
             <p className="mb-0 text-body">{scenarios.length} scenarios in this module</p>
           </div>
-          <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center gap-3 flex-wrap">
+            {moduleId === 'client-interview' && moduleType === 'CLIENT_INTERVIEW' && (
+              <Link
+                href={`/admin/practice-lab/${moduleId}/scenarios/new?type=${moduleType}`}
+                className="btn btn-primary btn-sm"
+              >
+                <i className="ti tabler-plus me-1" />
+                Add scenario
+              </Link>
+            )}
             <select
               className="form-select"
               style={{ maxWidth: 160 }}
@@ -295,6 +304,17 @@ export default function AdminScenariosPage() {
                           <i className="ti tabler-dots-vertical"></i>
                         </button>
                         <div className="dropdown-menu dropdown-menu-end">
+                          {moduleId === 'client-interview' && moduleType === 'CLIENT_INTERVIEW' && (
+                            <>
+                              <Link
+                                className="dropdown-item"
+                                href={`/admin/practice-lab/${moduleId}/scenarios/${s.id}/edit?type=${moduleType}`}
+                              >
+                                <i className="ti tabler-edit me-2"></i>Edit
+                              </Link>
+                              <div className="dropdown-divider"></div>
+                            </>
+                          )}
                           <button
                             className="dropdown-item"
                             onClick={() => togglePublish.mutate({ id: s.id, isPublished: !s.isPublished })}

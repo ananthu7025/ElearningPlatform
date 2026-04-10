@@ -38,9 +38,23 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) return errorResponse('VALIDATION', parsed.error.flatten().fieldErrors, 422)
 
     const scenario = await prisma.practiceScenario.findFirst({
-      where: { id: parsed.data.scenarioId, instituteId: user.instituteId! },
+      where: {
+        id: parsed.data.scenarioId,
+        instituteId: user.instituteId!,
+        isPublished: true,
+        isActive: true,
+      },
     })
     if (!scenario) return errorResponse('NOT_FOUND', 'Scenario not found', 404)
+
+    const mod = await prisma.practiceModule.findUnique({
+      where: {
+        instituteId_moduleType: { instituteId: user.instituteId!, moduleType: scenario.moduleType },
+      },
+    })
+    if (mod && !mod.isEnabled) {
+      return errorResponse('NOT_FOUND', 'Scenario not found', 404)
+    }
 
     const submission = await prisma.practiceSubmission.create({
       data: { 

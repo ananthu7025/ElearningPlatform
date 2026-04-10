@@ -34,7 +34,8 @@ export default function ScenarioPage() {
       try {
         const res = await api.get(`/practice-lab/submissions/${id}`)
         const s = res.data.submission
-        if (s.score != null) {
+        const score = s.tutorScore ?? s.aiScore
+        if (score != null) {
           setSubmitted(s)
           setPolling(false)
           return
@@ -45,6 +46,62 @@ export default function ScenarioPage() {
   }
 
   const scenario = data?.scenario
+
+  function formatAiFeedback(fb: unknown): string | null {
+    if (fb == null) return null
+    if (typeof fb === 'string') return fb
+    try {
+      return JSON.stringify(fb)
+    } catch {
+      return null
+    }
+  }
+
+  function ScenarioBody({ s }: { s: any }) {
+    const c = s.content
+    if (s.moduleType === 'CLIENT_INTERVIEW' && c && typeof c === 'object' && !Array.isArray(c)) {
+      const facts = Array.isArray(c.facts) ? c.facts : []
+      const provisions = Array.isArray(c.provisions) ? c.provisions : []
+      const brief = typeof c.brief === 'string' ? c.brief : null
+      return (
+        <div className="small" style={{ lineHeight: 1.8 }}>
+          <p className="mb-3">{s.description}</p>
+          {brief ? <p className="mb-3">{brief}</p> : null}
+          {facts.length > 0 && (
+            <div className="mb-3">
+              <span className="fw-semibold d-block mb-2">Facts</span>
+              <ul className="mb-0 ps-3">
+                {facts.map((f: string, i: number) => (
+                  <li key={i}>{f}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {provisions.length > 0 && (
+            <div>
+              <span className="fw-semibold d-block mb-2">Legal points / provisions</span>
+              <ul className="mb-0 ps-3">
+                {provisions.map((p: string, i: number) => (
+                  <li key={i}>{p}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )
+    }
+    if (typeof c === 'string') {
+      return <p className="mb-0 small" style={{ lineHeight: 1.8 }}>{c}</p>
+    }
+    if (c != null) {
+      return (
+        <pre className="mb-0 small" style={{ lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+          {typeof c === 'object' ? JSON.stringify(c, null, 2) : String(c)}
+        </pre>
+      )
+    }
+    return <p className="mb-0 small text-body-secondary">{s.description || 'No scenario content.'}</p>
+  }
 
   return (
     <StudentLayout>
@@ -63,7 +120,7 @@ export default function ScenarioPage() {
               </div>
               <div className="card-body">
                 <div className="bg-body-tertiary rounded p-4">
-                  <p className="mb-0 small" style={{ lineHeight: 1.8 }}>{scenario.content}</p>
+                  <ScenarioBody s={scenario} />
                 </div>
               </div>
             </div>
@@ -80,21 +137,29 @@ export default function ScenarioPage() {
                       <div className="spinner-border spinner-border-sm text-primary" />
                       <span className="small">AI is evaluating your response…</span>
                     </div>
-                  ) : submitted.score != null ? (
+                  ) : (submitted.tutorScore ?? submitted.aiScore) != null ? (
                     <>
                       <div className="d-flex align-items-center gap-4 mb-4">
                         <div className="avatar bg-label-success rounded">
-                          <span className="avatar-initial fw-bold">{submitted.score}</span>
+                          <span className="avatar-initial fw-bold">
+                            {submitted.tutorScore ?? submitted.aiScore}
+                          </span>
                         </div>
                         <div>
-                          <span className="fw-semibold d-block">Score: {submitted.score}/100</span>
-                          <small className="text-body-secondary">AI Evaluation</small>
+                          <span className="fw-semibold d-block">
+                            Score: {submitted.tutorScore ?? submitted.aiScore}/100
+                          </span>
+                          <small className="text-body-secondary">
+                            {submitted.tutorScore != null ? 'Tutor evaluation' : 'AI evaluation'}
+                          </small>
                         </div>
                       </div>
-                      {submitted.feedback && (
+                      {(submitted.tutorFeedback || formatAiFeedback(submitted.aiFeedback)) && (
                         <div className="bg-body-tertiary rounded p-3">
                           <small className="fw-semibold d-block mb-2">Feedback:</small>
-                          <small>{submitted.feedback}</small>
+                          <small>
+                            {submitted.tutorFeedback ?? formatAiFeedback(submitted.aiFeedback)}
+                          </small>
                         </div>
                       )}
                     </>
