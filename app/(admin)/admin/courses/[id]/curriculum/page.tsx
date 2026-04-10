@@ -286,6 +286,28 @@ export default function CurriculumPage() {
     close()
   }
 
+  // ── Auto-sync after upload: polls /api/upload/video/sync until Mux is ready ──
+  function pollMuxSync(lessonId: string) {
+    const MAX = 24 // 24 × 5s = 2 min max
+    let attempts = 0
+    const interval = setInterval(async () => {
+      attempts++
+      try {
+        const res = await api.post('/upload/video/sync', { lessonId })
+        if (res.data.status === 'ready') {
+          clearInterval(interval)
+          qc.invalidateQueries(['curriculum', id])
+          showToast('Video is ready for students.')
+        } else if (res.data.status === 'errored' || attempts >= MAX) {
+          clearInterval(interval)
+          showToast(attempts >= MAX ? 'Video is still processing — refresh later.' : 'Mux encoding error.')
+        }
+      } catch {
+        clearInterval(interval)
+      }
+    }, 5000)
+  }
+
   // ── Submit: video upload ──────────────────────────────────────────
   async function submitVideoUpload() {
     if (!fTitle.trim()) { setUploadError('Enter a title.'); return }
@@ -299,7 +321,8 @@ export default function CurriculumPage() {
         if (videoFile) {
           const muxRes = await api.post('/upload/video', { lessonId: targetLessonId })
           await uploadWithXHR(muxRes.data.uploadUrl, videoFile)
-          showToast('Video replaced — processing in the background.')
+          showToast('Video replaced — syncing with Mux…')
+          pollMuxSync(targetLessonId!)
         } else {
           showToast('Lesson updated.')
         }
@@ -311,7 +334,8 @@ export default function CurriculumPage() {
         const muxRes = await api.post('/upload/video', { lessonId })
         // 3. Upload file directly to Mux with progress
         await uploadWithXHR(muxRes.data.uploadUrl, videoFile!)
-        showToast('Video lesson created — processing in the background.')
+        showToast('Video uploaded — syncing with Mux…')
+        pollMuxSync(lessonId)
       }
       qc.invalidateQueries(['curriculum', id])
       close()
