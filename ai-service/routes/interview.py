@@ -153,8 +153,10 @@ async def interview_report(body: ReportRequest):
 
     completion = client.chat.completions.create(
         model=body.model,
-        messages=[{"role": "user", "content": "Generate the evaluation report now."}],
-        system=system,
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": "Generate the evaluation report now."},
+        ],
         stream=False,
         max_tokens=1024,
         temperature=0.3,

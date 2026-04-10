@@ -6,8 +6,9 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from routes.chat import router as chat_router
 from routes.interview import router as interview_router
@@ -32,7 +33,7 @@ async def verify_internal_key(request: Request, call_next):
         return await call_next(request)
     key = request.headers.get("x-internal-key", "")
     if INTERNAL_SECRET and key != INTERNAL_SECRET:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
     return await call_next(request)
 
 
