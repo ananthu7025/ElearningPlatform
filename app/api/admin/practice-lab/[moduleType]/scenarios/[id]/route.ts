@@ -44,20 +44,17 @@ export async function PATCH(
       return NextResponse.json({ scenario: { id: updated.id, isPublished: updated.isPublished } })
     }
 
-    if (scenario.moduleType !== PracticeModuleType.CLIENT_INTERVIEW) {
-      return errorResponse(
-        'VALIDATION',
-        'Full edits are only supported for Client Interview scenarios. Use isPublished to publish or unpublish.',
-        422
-      )
+    const updateSchema = UPDATE_SCHEMA_MAP[scenario.moduleType]
+    if (!updateSchema) {
+      return errorResponse('VALIDATION', 'Full edits are not yet supported for this module type.', 422)
     }
 
-    const parsed = clientInterviewUpdateSchema.safeParse(body)
+    const parsed = updateSchema.safeParse(body)
     if (!parsed.success) {
       return errorResponse('VALIDATION', parsed.error.flatten().fieldErrors as Record<string, unknown>, 422)
     }
 
-    const d = parsed.data
+    const d = parsed.data as Record<string, unknown>
     if (Object.keys(d).length === 0) {
       return errorResponse('VALIDATION', 'No fields to update', 422)
     }
@@ -65,14 +62,14 @@ export async function PATCH(
     const updated = await prisma.practiceScenario.update({
       where: { id: params.id },
       data: {
-        ...(d.title !== undefined && { title: d.title }),
-        ...(d.description !== undefined && { description: d.description }),
-        ...(d.difficulty !== undefined && { difficulty: d.difficulty }),
-        ...(d.clientName !== undefined && { clientName: d.clientName }),
-        ...(d.caseType !== undefined && { caseType: d.caseType }),
-        ...(d.caseId !== undefined && { caseId: d.caseId }),
-        ...(d.content !== undefined && { content: d.content as object }),
-        ...(d.isPublished !== undefined && { isPublished: d.isPublished }),
+        ...(d.title       != null && { title:       d.title       as string }),
+        ...(d.description != null && { description: d.description as string }),
+        ...(d.difficulty  != null && { difficulty:  d.difficulty  as 'EASY' | 'MEDIUM' | 'HARD' }),
+        ...(d.clientName  !== undefined && { clientName: (d.clientName  as string | null) ?? null }),
+        ...(d.caseType    !== undefined && { caseType:   (d.caseType    as string | null) ?? null }),
+        ...(d.caseId      !== undefined && { caseId:     (d.caseId      as string | null) ?? null }),
+        ...(d.content     != null && { content:     d.content     as object }),
+        ...(d.isPublished !== undefined && { isPublished: d.isPublished as boolean }),
       },
     })
 
