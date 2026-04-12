@@ -4,7 +4,8 @@
       "Bash(npx prisma:*)",
       "Bash(mkdir -p /Users/ananthu/LMS/ledxElearn/app/api/admin/practice-lab/\\\\[moduleType\\\\]/toggle)",
       "Bash(mkdir -p /Users/ananthu/LMS/ledxElearn/app/api/admin/practice-lab/\\\\[moduleType\\\\]/scenarios)",
-      "Bash(mkdir -p /Users/ananthu/LMS/ledxElearn/app/api/admin/practice-lab/\\\\[moduleType\\\\]/scenarios/\\\\[id\\\\])"
+      "Bash(mkdir -p /Users/ananthu/LMS/ledxElearn/app/api/admin/practice-lab/\\\\[moduleType\\\\]/scenarios/\\\\[id\\\\])",
+      "Bash(nc -zv 163.5.191.138 5432 -w 5)"
     ],
     "additionalDirectories": [
       "/Users/ananthu/LMS/full-version/assets/vendor/css/pages",
@@ -18,7 +19,13 @@
       "/Users/ananthu/LMS/ledxElearn/app/api/admin/tutors",
       "/Users/ananthu/LMS/ledxElearn/app/api/admin/announcements",
       "/Users/ananthu/LMS/ledxElearn/app/api/public/[slug]/courses",
-      "/Users/ananthu/LMS/ledxElearn/app/(admin)/admin/practice-lab/[moduleId]"
+      "/Users/ananthu/LMS/ledxElearn/app/(admin)/admin/practice-lab/[moduleId]",
+      "/Users/ananthu/LMS/ledx/app/student/home",
+      "/Users/ananthu/LMS/ledx/app/student/courses",
+      "/Users/ananthu/LMS/ledx/app/student/certificates",
+      "/Users/ananthu/LMS/ledx/app/student/practice-lab",
+      "/Users/ananthu/LMS/ledx/app/student/learn",
+      "/Users/ananthu/LMS/ledx/app/student/profile"
     ]
   }
 }
