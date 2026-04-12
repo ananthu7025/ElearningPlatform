@@ -4,6 +4,15 @@ import { prisma } from '@/lib/prisma'
 import { handleRouteError, errorResponse } from '@/lib/errors'
 import { PracticeModuleType } from '@prisma/client'
 import { clientInterviewUpdateSchema } from '@/lib/practiceLab/clientInterviewScenario'
+import { caseDraftUpdateSchema } from '@/lib/practiceLab/caseDraftScenario'
+import { contractDraftUpdateSchema } from '@/lib/practiceLab/contractDraftScenario'
+import { z } from 'zod'
+
+const UPDATE_SCHEMA_MAP: Record<string, z.ZodTypeAny> = {
+  CLIENT_INTERVIEW:  clientInterviewUpdateSchema,
+  CASE_DRAFTING:     caseDraftUpdateSchema,
+  CONTRACT_DRAFTING: contractDraftUpdateSchema,
+}
 
 export async function PATCH(
   req: NextRequest,

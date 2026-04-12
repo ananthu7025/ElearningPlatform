@@ -4,8 +4,17 @@ import { prisma } from '@/lib/prisma'
 import { handleRouteError, errorResponse } from '@/lib/errors'
 import { PracticeModuleType } from '@prisma/client'
 import { clientInterviewCreateSchema } from '@/lib/practiceLab/clientInterviewScenario'
+import { caseDraftCreateSchema } from '@/lib/practiceLab/caseDraftScenario'
+import { contractDraftCreateSchema } from '@/lib/practiceLab/contractDraftScenario'
+import { z } from 'zod'
 
 const VALID_TYPES = Object.values(PracticeModuleType)
+
+const SCHEMA_MAP: Record<string, z.ZodTypeAny> = {
+  CLIENT_INTERVIEW: clientInterviewCreateSchema,
+  CASE_DRAFTING:    caseDraftCreateSchema,
+  CONTRACT_DRAFTING: contractDraftCreateSchema,
+}
 
 export async function POST(
   req: NextRequest,
@@ -20,33 +29,32 @@ export async function POST(
       return errorResponse('VALIDATION', 'Invalid module type', 422)
     }
 
-    if (moduleType !== PracticeModuleType.CLIENT_INTERVIEW) {
-      return errorResponse(
-        'VALIDATION',
-        'Creating scenarios for this module type is not enabled yet. Use Client Interview for now.',
-        422
-      )
+    const schema = SCHEMA_MAP[moduleType]
+    if (!schema) {
+      return errorResponse('VALIDATION', 'Creating scenarios for this module type is not yet supported.', 422)
     }
 
     const body = await req.json()
-    const parsed = clientInterviewCreateSchema.safeParse(body)
+    const parsed = schema.safeParse(body)
     if (!parsed.success) {
       return errorResponse('VALIDATION', parsed.error.flatten().fieldErrors as Record<string, unknown>, 422)
     }
 
+    const data = parsed.data as Record<string, unknown>
+
     const scenario = await prisma.practiceScenario.create({
       data: {
         instituteId,
-        moduleType: PracticeModuleType.CLIENT_INTERVIEW,
-        title: parsed.data.title,
-        description: parsed.data.description,
-        difficulty: parsed.data.difficulty,
-        clientName: parsed.data.clientName ?? null,
-        caseType: parsed.data.caseType ?? null,
-        caseId: parsed.data.caseId ?? null,
-        content: parsed.data.content as object,
-        isPublished: parsed.data.isPublished ?? false,
-        tutorId: null,
+        moduleType,
+        title:       String(data.title ?? ''),
+        description: String(data.description ?? ''),
+        difficulty:  data.difficulty as 'EASY' | 'MEDIUM' | 'HARD',
+        clientName:  (data.clientName as string | null) ?? null,
+        caseType:    (data.caseType   as string | null) ?? null,
+        caseId:      (data.caseId     as string | null) ?? null,
+        content:     (data.content as object) ?? {},
+        isPublished: Boolean(data.isPublished ?? false),
+        tutorId:     null,
       },
     })
 
