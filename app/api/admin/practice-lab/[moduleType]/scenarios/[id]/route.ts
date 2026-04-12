@@ -6,12 +6,14 @@ import { PracticeModuleType } from '@prisma/client'
 import { clientInterviewUpdateSchema } from '@/lib/practiceLab/clientInterviewScenario'
 import { caseDraftUpdateSchema } from '@/lib/practiceLab/caseDraftScenario'
 import { contractDraftUpdateSchema } from '@/lib/practiceLab/contractDraftScenario'
+import { mediationUpdateSchema } from '@/lib/practiceLab/mediationScenario'
 import { z } from 'zod'
 
 const UPDATE_SCHEMA_MAP: Record<string, z.ZodTypeAny> = {
-  CLIENT_INTERVIEW:  clientInterviewUpdateSchema,
-  CASE_DRAFTING:     caseDraftUpdateSchema,
-  CONTRACT_DRAFTING: contractDraftUpdateSchema,
+  CLIENT_INTERVIEW:      clientInterviewUpdateSchema,
+  CASE_DRAFTING:         caseDraftUpdateSchema,
+  CONTRACT_DRAFTING:     contractDraftUpdateSchema,
+  ARBITRATION_MEDIATION: mediationUpdateSchema,
 }
 
 export async function PATCH(

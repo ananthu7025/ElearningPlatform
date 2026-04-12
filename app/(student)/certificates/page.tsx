@@ -15,7 +15,20 @@ export default function CertificatesPage() {
     <StudentLayout title="My Certificates">
 
       {isLoading ? (
-        <div className="d-flex justify-content-center py-5"><div className="spinner-border text-primary" role="status" /></div>
+        <div className="row g-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="col-md-6 col-xl-4">
+              <div className="card border placeholder-glow">
+                <div className="card-body text-center py-5">
+                  <span className="placeholder rounded-circle d-block mx-auto mb-4" style={{ width: 64, height: 64 }} />
+                  <span className="placeholder col-8 d-block mx-auto mb-2" />
+                  <span className="placeholder col-5 d-block mx-auto mb-4" />
+                  <span className="placeholder col-6 d-block mx-auto rounded" style={{ height: 32 }} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       ) : certificates.length === 0 ? (
         <div className="card">
           <div className="card-body text-center py-8">

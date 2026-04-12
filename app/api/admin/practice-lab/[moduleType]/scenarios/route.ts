@@ -6,14 +6,16 @@ import { PracticeModuleType } from '@prisma/client'
 import { clientInterviewCreateSchema } from '@/lib/practiceLab/clientInterviewScenario'
 import { caseDraftCreateSchema } from '@/lib/practiceLab/caseDraftScenario'
 import { contractDraftCreateSchema } from '@/lib/practiceLab/contractDraftScenario'
+import { mediationCreateSchema } from '@/lib/practiceLab/mediationScenario'
 import { z } from 'zod'
 
 const VALID_TYPES = Object.values(PracticeModuleType)
 
 const SCHEMA_MAP: Record<string, z.ZodTypeAny> = {
-  CLIENT_INTERVIEW: clientInterviewCreateSchema,
-  CASE_DRAFTING:    caseDraftCreateSchema,
-  CONTRACT_DRAFTING: contractDraftCreateSchema,
+  CLIENT_INTERVIEW:      clientInterviewCreateSchema,
+  CASE_DRAFTING:         caseDraftCreateSchema,
+  CONTRACT_DRAFTING:     contractDraftCreateSchema,
+  ARBITRATION_MEDIATION: mediationCreateSchema,
 }
 
 export async function POST(

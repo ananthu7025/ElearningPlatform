@@ -26,7 +26,21 @@ export default function MyCoursesPage() {
         <div className="row g-6">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="col-md-6 col-xl-4">
-              <div className="card"><div className="card-body placeholder-glow"><span className="placeholder col-8 mb-2 d-block" /><span className="placeholder col-5" /></div></div>
+              <div className="card h-100 placeholder-glow">
+                <div className="card-body">
+                  <span className="placeholder col-9 d-block mb-2" style={{ height: 18 }} />
+                  <span className="placeholder col-5 d-block mb-4" style={{ height: 14 }} />
+                  <div className="d-flex justify-content-between mb-1">
+                    <span className="placeholder col-3" style={{ height: 12 }} />
+                    <span className="placeholder col-2" style={{ height: 12 }} />
+                  </div>
+                  <span className="placeholder col-12 d-block mb-4 rounded" style={{ height: 8 }} />
+                  <div className="d-flex justify-content-between align-items-center">
+                    <span className="placeholder col-4" style={{ height: 14 }} />
+                    <span className="placeholder col-3 rounded" style={{ height: 30 }} />
+                  </div>
+                </div>
+              </div>
             </div>
           ))}
         </div>

@@ -83,10 +83,13 @@ export default function QuizLessonPage() {
   if (results) {
     return (
       <StudentLayout>
-        <div className="mx-auto text-center" style={{ maxWidth: 600, marginTop: '10vh' }}>
-           <div className={`avatar avatar-xl bg-label-primary mx-auto mb-6 shadow-sm`}>
-              <i className={`ti tabler-circle-check fs-1`}></i>
-           </div>
+        <div className="mx-auto text-center" style={{ maxWidth: 600, marginTop: '6vh' }}>
+           <img
+             src="/img/illustrations/boy-with-rocket-light.png"
+             alt="Submitted"
+             height={180}
+             className="img-fluid mb-5"
+           />
            <h2 className="fw-black text-heading mb-2">Assessment Submitted!</h2>
            <p className="fs-5 text-body-secondary mb-8 lh-base">
              Your answers have been successfully recorded. This assessment requires manual evaluation by the course faculty.

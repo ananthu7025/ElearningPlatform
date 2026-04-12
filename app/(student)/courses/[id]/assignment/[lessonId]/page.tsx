@@ -46,10 +46,13 @@ export default function AssignmentLessonPage() {
   if (isSubmitted) {
     return (
       <StudentLayout>
-        <div className="mx-auto text-center" style={{ maxWidth: 600, marginTop: '10vh' }}>
-           <div className={`avatar avatar-xl bg-label-primary mx-auto mb-6 shadow-sm`}>
-              <i className={`ti tabler-cloud-check fs-1`}></i>
-           </div>
+        <div className="mx-auto text-center" style={{ maxWidth: 600, marginTop: '6vh' }}>
+           <img
+             src="/img/illustrations/boy-with-rocket-light.png"
+             alt="Assignment submitted"
+             height={180}
+             className="img-fluid mb-5"
+           />
            <h2 className="fw-black text-heading mb-2">Assignment Received!</h2>
            <p className="fs-5 text-body-secondary mb-8 lh-base">
              Your files and response have been uploaded successfully. This task will now be queued for manual review by our instructional team.
@@ -227,13 +230,16 @@ export default function AssignmentLessonPage() {
         ) : (
           /* REVIEW & RESULTS UI (Placeholder for student view) */
           <div className="d-flex flex-column gap-6 animate-in">
-             <div className="card shadow-sm border-0 text-center py-12">
-                <i className="ti tabler-history fs-1 text-body-secondary mb-4 opacity-25"></i>
+             <div className="card shadow-sm border-0 text-center py-8">
+                <img
+                  src="/img/illustrations/girl-sitting-with-laptop.png"
+                  alt="Under review"
+                  height={160}
+                  className="img-fluid mb-4"
+                />
                 <h5 className="fw-black text-heading mb-2">Review in Progress</h5>
-                <p className="text-body-secondary small mx-auto" style={{ maxWidth: 400 }}>Your assignment is currently being graded by the course faculty. You will receive a notification once the review is complete.</p>
-                <div className="mt-8">
-                   <span className="badge bg-label-primary px-4 py-2 rounded-pill">Expected Review: Apr 28</span>
-                </div>
+                <p className="text-body-secondary small mx-auto mb-6" style={{ maxWidth: 400 }}>Your assignment is currently being graded by the course faculty. You will receive a notification once the review is complete.</p>
+                <span className="badge bg-label-primary px-4 py-2 rounded-pill">Expected Review: Apr 28</span>
              </div>
           </div>
         )}
