@@ -7,3 +7,9 @@
 .menu .app-brand.demo {
   height: 64px;
 }
+
+/* TTS speaking indicator bars */
+@keyframes tts-bounce {
+  0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
+  50%       { transform: scaleY(1);   opacity: 1;   }
+}

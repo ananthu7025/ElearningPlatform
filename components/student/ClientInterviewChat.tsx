@@ -50,6 +50,21 @@ const MAX_TURNS = 18
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
+/** Pick a consistent Sarvam speaker voice based on the client's name. */
+function resolveVoice(name: string): string {
+  const lower = name.toLowerCase()
+  const femininePatterns = [
+    'priya','ananya','divya','pooja','neha','sunita','kavita','rekha','meena',
+    'asha','sita','gita','lata','nandita','padma','usha','radha','lakshmi',
+    'sarita','vandana','mrs','ms.','miss','smt',
+  ]
+  const isFeminine = femininePatterns.some((p) => lower.includes(p))
+  const female = ['meera','pavithra','maitreyi','aroha','dia'] as const
+  const male   = ['arvind','amol','amartya','neel']            as const
+  const hash   = lower.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+  return isFeminine ? female[hash % female.length] : male[hash % male.length]
+}
+
 function gradeColor(grade: string) {
   if (grade === 'Distinction') return 'success'
   if (grade === 'Merit') return 'info'
@@ -91,16 +106,78 @@ export default function ClientInterviewChat({ scenario }: Props) {
   const [typing,   setTyping]   = useState(false)
   const [notepad,  setNotepad]  = useState('')
   const [report,   setReport]   = useState<Report | null>(null)
-  const [saving,   setSaving]   = useState(false)
-  const [saved,    setSaved]    = useState(false)
+  const [saving,       setSaving]       = useState(false)
+  const [saved,        setSaved]        = useState(false)
+  const [voiceEnabled, setVoiceEnabled] = useState(true)
+  const [speaking,     setSpeaking]     = useState(false)
 
-  const bottomRef  = useRef<HTMLDivElement>(null)
-  const accessToken = useAuthStore((s) => s.accessToken)
+  const bottomRef    = useRef<HTMLDivElement>(null)
+  const audioCtxRef  = useRef<AudioContext | null>(null)
+  const audioQueue   = useRef<Promise<void>>(Promise.resolve())
+  const accessToken  = useAuthStore((s) => s.accessToken)
 
   // Auto-scroll chat
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, typing])
+
+  // Clean up AudioContext on unmount
+  useEffect(() => {
+    return () => { audioCtxRef.current?.close() }
+  }, [])
+
+  // ── TTS helpers ────────────────────────────────────────────────────────────
+
+  async function fetchTtsAudio(text: string): Promise<ArrayBuffer | null> {
+    try {
+      const res = await fetch('/api/ai/tts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: accessToken ? `Bearer ${accessToken}` : '',
+        },
+        body: JSON.stringify({ text, speaker: resolveVoice(clientName) }),
+      })
+      if (!res.ok) return null
+      return await res.arrayBuffer()
+    } catch {
+      return null
+    }
+  }
+
+  async function playAudioBuffer(buffer: ArrayBuffer): Promise<void> {
+    return new Promise((resolve) => {
+      try {
+        if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+          audioCtxRef.current = new AudioContext()
+        }
+        const ctx = audioCtxRef.current
+        ctx.decodeAudioData(
+          buffer,
+          (decoded) => {
+            const source = ctx.createBufferSource()
+            source.buffer = decoded
+            source.connect(ctx.destination)
+            source.onended = () => resolve()
+            source.start(0)
+          },
+          () => resolve(),
+        )
+      } catch {
+        resolve()
+      }
+    })
+  }
+
+  function speakReply(text: string) {
+    if (!voiceEnabled || !text.trim()) return
+    audioQueue.current = audioQueue.current.then(async () => {
+      setSpeaking(true)
+      const buffer = await fetchTtsAudio(text)
+      if (buffer) await playAudioBuffer(buffer)
+      setSpeaking(false)
+    })
+  }
 
   // ── fetch SSE reply from AI service ────────────────────────────────────────
 
@@ -156,7 +233,8 @@ export default function ClientInterviewChat({ scenario }: Props) {
     setStep('CONSULTATION')
     setTyping(true)
     try {
-      await fetchReply([])
+      const reply = await fetchReply([])
+      speakReply(reply)
     } catch {
       setMessages([{ role: 'assistant', content: "Hi, I'm glad you could see me. I'm not sure where to begin…" }])
     } finally {
@@ -179,7 +257,8 @@ export default function ClientInterviewChat({ scenario }: Props) {
     setTyping(true)
 
     try {
-      await fetchReply(updated)
+      const reply = await fetchReply(updated)
+      speakReply(reply)
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -418,16 +497,27 @@ export default function ClientInterviewChat({ scenario }: Props) {
                     </div>
                   </div>
 
-                  {/* end button */}
-                  <button
-                    className="btn btn-sm btn-label-secondary d-flex align-items-center gap-1 px-3"
-                    onClick={handleEndInterview}
-                    disabled={typing || messages.length === 0}
-                    style={{ fontSize: 12 }}
-                  >
-                    <i className="icon-base ti tabler-checklist icon-14px" />
-                    End Interview
-                  </button>
+                  {/* voice + end buttons */}
+                  <div className="d-flex align-items-center gap-2">
+                    <button
+                      type="button"
+                      className={`btn btn-sm btn-icon ${voiceEnabled ? 'btn-primary' : 'btn-outline-secondary'}`}
+                      onClick={() => setVoiceEnabled((v) => !v)}
+                      title={voiceEnabled ? 'Mute AI voice' : 'Unmute AI voice'}
+                      style={{ width: 32, height: 32 }}
+                    >
+                      <i className={`icon-base ti ${voiceEnabled ? 'tabler-volume' : 'tabler-volume-off'} icon-14px`} />
+                    </button>
+                    <button
+                      className="btn btn-sm btn-label-secondary d-flex align-items-center gap-1 px-3"
+                      onClick={handleEndInterview}
+                      disabled={typing || messages.length === 0}
+                      style={{ fontSize: 12 }}
+                    >
+                      <i className="icon-base ti tabler-checklist icon-14px" />
+                      End Interview
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -481,6 +571,34 @@ export default function ClientInterviewChat({ scenario }: Props) {
                         <div className="chat-message-text d-flex align-items-center gap-2">
                           <span className="spinner-border spinner-border-sm text-success border-2" style={{ width: 12, height: 12 }} />
                           <small className="text-body-secondary" style={{ fontSize: 11 }}>{clientName.split(' ')[0]} is typing…</small>
+                        </div>
+                      </div>
+                    </li>
+                  )}
+
+                  {speaking && !typing && (
+                    <li className="chat-message">
+                      <div className="d-flex align-items-center gap-3">
+                        <div className="avatar avatar-sm flex-shrink-0">
+                          <span className="avatar-initial rounded-circle bg-success text-white fw-bold" style={{ fontSize: 11 }}>
+                            {initials}
+                          </span>
+                        </div>
+                        <div className="chat-message-text d-flex align-items-center gap-2">
+                          <span className="d-flex gap-1 align-items-end" style={{ height: 14 }}>
+                            {[0, 150, 300].map((delay) => (
+                              <span
+                                key={delay}
+                                className="bg-success rounded-pill"
+                                style={{
+                                  width: 3, height: 10, display: 'inline-block',
+                                  animation: 'tts-bounce 0.8s ease-in-out infinite',
+                                  animationDelay: `${delay}ms`,
+                                }}
+                              />
+                            ))}
+                          </span>
+                          <small className="text-success fw-semibold" style={{ fontSize: 11 }}>{clientName.split(' ')[0]} is speaking…</small>
                         </div>
                       </div>
                     </li>
