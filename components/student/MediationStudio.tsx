@@ -180,7 +180,7 @@ export default function MediationStudio({ scenario }: Props) {
           if (payload === '[DONE]') break
           try {
             const parsed = JSON.parse(payload)
-            const delta  = parsed?.choices?.[0]?.delta?.content ?? parsed?.text ?? ''
+            const delta  = parsed?.content ?? parsed?.choices?.[0]?.delta?.content ?? parsed?.text ?? ''
             reply += delta
             setMessages((prev) => {
               const updated = [...prev]
