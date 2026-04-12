@@ -152,20 +152,31 @@ export default function MediationStudio({ scenario }: Props) {
     const replyIndex = nextMessages.length
     setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
 
+    // Strip empty-content or error placeholder messages before sending — they
+    // break the Zod min(1) validation and add noise to the AI context.
+    const apiMessages = nextMessages.filter(
+      (m) => m.content.trim().length > 0 && m.content !== 'An error occurred. Please try again.'
+    )
+
+    let reply = ''
+
     try {
       const res = await fetch(`/api/practice-lab/scenarios/${scenario.id}/mediation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ messages: nextMessages, addressedTo, generateReport: false }),
+        body: JSON.stringify({ messages: apiMessages, addressedTo, generateReport: false }),
       })
 
-      if (!res.ok || !res.body) throw new Error('Failed to get response')
+      if (!res.ok || !res.body) {
+        const errText = await res.text().catch(() => `HTTP ${res.status}`)
+        console.error('[MediationStudio] chat API error', res.status, errText)
+        throw new Error(`HTTP ${res.status}: ${errText}`)
+      }
 
       const reader  = res.body.getReader()
       const decoder = new TextDecoder()
       let   buffer  = ''
-      let   reply   = ''
 
       while (true) {
         const { value, done } = await reader.read()
@@ -181,16 +192,21 @@ export default function MediationStudio({ scenario }: Props) {
           try {
             const parsed = JSON.parse(payload)
             const delta  = parsed?.content ?? parsed?.choices?.[0]?.delta?.content ?? parsed?.text ?? ''
-            reply += delta
-            setMessages((prev) => {
-              const updated = [...prev]
-              updated[replyIndex] = { role: 'assistant', content: reply }
-              return updated
-            })
-          } catch { /* ignore malformed SSE chunks */ }
+            if (delta) {
+              reply += delta
+              setMessages((prev) => {
+                const updated = [...prev]
+                updated[replyIndex] = { role: 'assistant', content: reply }
+                return updated
+              })
+            }
+          } catch (parseErr) {
+            console.warn('[MediationStudio] malformed SSE chunk:', parseErr)
+          }
         }
       }
-    } catch {
+    } catch (err) {
+      console.error('[MediationStudio] sendMessage failed:', err)
       setMessages((prev) => {
         const updated = [...prev]
         updated[replyIndex] = {
@@ -200,6 +216,19 @@ export default function MediationStudio({ scenario }: Props) {
         return updated
       })
     } finally {
+      // If stream finished with no content, replace the empty placeholder so it
+      // doesn't corrupt the Zod min(1) validation on the next request.
+      setMessages((prev) => {
+        const updated = [...prev]
+        if (updated[replyIndex]?.content === '') {
+          console.warn('[MediationStudio] stream produced no content — showing error placeholder')
+          updated[replyIndex] = {
+            role:    'assistant',
+            content: 'An error occurred. Please try again.',
+          }
+        }
+        return updated
+      })
       setStreaming(false)
     }
   }
@@ -210,17 +239,26 @@ export default function MediationStudio({ scenario }: Props) {
     setStep('REVIEWING')
     setReportError(null)
     try {
+      const validMessages = messages.filter(
+        (m) => m.content.trim().length > 0 && m.content !== 'An error occurred. Please try again.'
+      )
       const res = await fetch(`/api/practice-lab/scenarios/${scenario.id}/mediation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ messages, addressedTo: 'both', generateReport: true }),
+        body: JSON.stringify({ messages: validMessages, addressedTo: 'both', generateReport: true }),
       })
-      if (!res.ok) throw new Error('Report generation failed')
+      if (!res.ok) {
+        const errText = await res.text().catch(() => `HTTP ${res.status}`)
+        console.error('[MediationStudio] report API error', res.status, errText)
+        throw new Error(`HTTP ${res.status}: ${errText}`)
+      }
       const data = await res.json()
+      console.log('[MediationStudio] report received:', data)
       setReport(data.report ?? data)
       setStep('RESULTS')
-    } catch {
+    } catch (err) {
+      console.error('[MediationStudio] endSession failed:', err)
       setReportError('Could not generate your evaluation. Please try again.')
       setStep('SESSION')
     }
@@ -247,8 +285,10 @@ export default function MediationStudio({ scenario }: Props) {
       <div className="container-fluid py-4" style={{ maxWidth: 880 }}>
         {/* header */}
         <div className="d-flex align-items-center gap-3 mb-4">
-          <div className="avatar bg-label-primary rounded">
-            <i className={`ti ${modeIcon} avatar-initial`} style={{ fontSize: 20 }} />
+          <div className="avatar">
+            <span className="avatar-initial rounded bg-label-primary">
+              <i className={`ti ${modeIcon}`} style={{ fontSize: 20 }} />
+            </span>
           </div>
           <div>
             <h5 className="mb-0">{scenario.title}</h5>
@@ -284,8 +324,8 @@ export default function MediationStudio({ scenario }: Props) {
               <div key={key} className="col-md-6">
                 <div className={`card border-${color} h-100`}>
                   <div className={`card-header bg-label-${color} d-flex align-items-center gap-2`}>
-                    <div className={`avatar avatar-sm bg-${color} text-white rounded-circle`}>
-                      <span className="fw-bold" style={{ fontSize: 12 }}>
+                    <div className="avatar avatar-sm">
+                      <span className={`avatar-initial rounded-circle bg-${color} text-white fw-bold`} style={{ fontSize: 12 }}>
                         {party.name.slice(0, 2).toUpperCase()}
                       </span>
                     </div>
@@ -471,8 +511,10 @@ export default function MediationStudio({ scenario }: Props) {
 
       {/* top bar */}
       <div className="d-flex align-items-center gap-3 px-4 py-2 border-bottom bg-paper flex-shrink-0">
-        <div className="avatar avatar-sm bg-label-primary rounded">
-          <i className={`ti ${modeIcon} avatar-initial`} style={{ fontSize: 16 }} />
+        <div className="avatar avatar-sm">
+          <span className="avatar-initial rounded bg-label-primary">
+            <i className={`ti ${modeIcon}`} style={{ fontSize: 16 }} />
+          </span>
         </div>
         <div className="me-auto">
           <div className="fw-semibold text-heading" style={{ fontSize: 14 }}>{scenario.title}</div>
@@ -530,8 +572,8 @@ export default function MediationStudio({ scenario }: Props) {
               >
                 <div className={`card-body p-3 ${addressedTo === key ? `bg-label-${color}` : ''}`}>
                   <div className="d-flex align-items-center gap-2 mb-2">
-                    <div className={`avatar avatar-xs bg-${color} text-white rounded-circle`}>
-                      <span style={{ fontSize: 10, fontWeight: 700 }}>
+                    <div className="avatar avatar-xs">
+                      <span className={`avatar-initial rounded-circle bg-${color} text-white`} style={{ fontSize: 10, fontWeight: 700 }}>
                         {party.name.slice(0, 2).toUpperCase()}
                       </span>
                     </div>
@@ -573,8 +615,10 @@ export default function MediationStudio({ scenario }: Props) {
             {messages.map((m, i) => (
               <div key={i} className={`d-flex mb-3 ${m.role === 'user' ? 'justify-content-end' : 'justify-content-start'}`}>
                 {m.role === 'assistant' && (
-                  <div className="avatar avatar-sm bg-label-secondary rounded-circle me-2 flex-shrink-0 align-self-end">
-                    <i className="ti tabler-robot avatar-initial" style={{ fontSize: 14 }} />
+                  <div className="avatar avatar-sm me-2 flex-shrink-0 align-self-end">
+                    <span className="avatar-initial rounded-circle bg-label-secondary">
+                      <i className="ti tabler-robot" style={{ fontSize: 14 }} />
+                    </span>
                   </div>
                 )}
                 <div
@@ -591,8 +635,10 @@ export default function MediationStudio({ scenario }: Props) {
                   ) : '')}
                 </div>
                 {m.role === 'user' && (
-                  <div className="avatar avatar-sm bg-primary text-white rounded-circle ms-2 flex-shrink-0 align-self-end">
-                    <i className="ti tabler-gavel avatar-initial" style={{ fontSize: 14 }} />
+                  <div className="avatar avatar-sm ms-2 flex-shrink-0 align-self-end">
+                    <span className="avatar-initial rounded-circle bg-primary">
+                      <i className="ti tabler-gavel" style={{ fontSize: 14 }} />
+                    </span>
                   </div>
                 )}
               </div>
