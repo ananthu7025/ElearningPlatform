@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 from routes.chat import router as chat_router
 from routes.interview import router as interview_router
 from routes.drafting import router as drafting_router
+from routes.mediation import router as mediation_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -73,6 +74,7 @@ async def log_requests(request: Request, call_next):
 app.include_router(chat_router)
 app.include_router(interview_router)
 app.include_router(drafting_router)
+app.include_router(mediation_router)
 
 # ── Health ────────────────────────────────────────────────────────────────────
 @app.get("/health")

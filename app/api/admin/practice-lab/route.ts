@@ -8,12 +8,13 @@ const MODULE_META: Record<
   PracticeModuleType,
   { id: string; icon: string; color: string; title: string; type: string; typeColor: string; difficulty: string; diffColor: string; xp: number; time: string }
 > = {
-  CLIENT_INTERVIEW:   { id: 'client-interview',   icon: 'tabler-briefcase',     color: 'success',   title: 'Client Interview Room',       type: 'Skill',     typeColor: 'success',   difficulty: 'Beginner',     diffColor: 'success', xp: 150, time: '20–30 min' },
-  CASE_DRAFTING:      { id: 'case-drafting',       icon: 'tabler-edit',          color: 'primary',   title: 'Case Drafting Studio',        type: 'Drafting',  typeColor: 'primary',   difficulty: 'Intermediate', diffColor: 'warning', xp: 200, time: '45–60 min' },
-  CONTRACT_DRAFTING:  { id: 'contract-drafting',   icon: 'tabler-clipboard-text',color: 'warning',   title: 'Contract Drafting Desk',      type: 'Drafting',  typeColor: 'warning',   difficulty: 'Intermediate', diffColor: 'warning', xp: 250, time: '40–60 min' },
-  MOOT_COURT:         { id: 'moot-court',          icon: 'tabler-microphone',    color: 'danger',    title: 'Moot Court Simulator',        type: 'Advocacy',  typeColor: 'danger',    difficulty: 'Advanced',     diffColor: 'danger',  xp: 350, time: '30–45 min' },
-  LEGAL_RESEARCH:     { id: 'legal-research',      icon: 'tabler-search',        color: 'info',      title: 'Legal Research Arena',        type: 'Research',  typeColor: 'info',      difficulty: 'Intermediate', diffColor: 'warning', xp: 180, time: '25–35 min' },
-  COURTROOM_ARGUMENT: { id: 'courtroom-argument',  icon: 'tabler-scale',         color: 'secondary', title: 'Courtroom Argument Builder',  type: 'Advocacy',  typeColor: 'secondary', difficulty: 'Advanced',     diffColor: 'danger',  xp: 300, time: '35–50 min' },
+  CLIENT_INTERVIEW:      { id: 'client-interview',      icon: 'tabler-briefcase',     color: 'success',   title: 'Client Interview Room',        type: 'Skill',    typeColor: 'success',   difficulty: 'Beginner',     diffColor: 'success', xp: 150, time: '20–30 min' },
+  CASE_DRAFTING:         { id: 'case-drafting',         icon: 'tabler-edit',          color: 'primary',   title: 'Case Drafting Studio',         type: 'Drafting', typeColor: 'primary',   difficulty: 'Intermediate', diffColor: 'warning', xp: 200, time: '45–60 min' },
+  CONTRACT_DRAFTING:     { id: 'contract-drafting',     icon: 'tabler-clipboard-text',color: 'warning',   title: 'Contract Drafting Desk',       type: 'Drafting', typeColor: 'warning',   difficulty: 'Intermediate', diffColor: 'warning', xp: 250, time: '40–60 min' },
+  MOOT_COURT:            { id: 'moot-court',            icon: 'tabler-microphone',    color: 'danger',    title: 'Moot Court Simulator',         type: 'Advocacy', typeColor: 'danger',    difficulty: 'Advanced',     diffColor: 'danger',  xp: 350, time: '30–45 min' },
+  LEGAL_RESEARCH:        { id: 'legal-research',        icon: 'tabler-search',        color: 'info',      title: 'Legal Research Arena',         type: 'Research', typeColor: 'info',      difficulty: 'Intermediate', diffColor: 'warning', xp: 180, time: '25–35 min' },
+  COURTROOM_ARGUMENT:    { id: 'courtroom-argument',    icon: 'tabler-scale',         color: 'secondary', title: 'Courtroom Argument Builder',   type: 'Advocacy', typeColor: 'secondary', difficulty: 'Advanced',     diffColor: 'danger',  xp: 300, time: '35–50 min' },
+  ARBITRATION_MEDIATION: { id: 'arbitration-mediation', icon: 'tabler-handshake',     color: 'purple',    title: 'Arbitration & Mediation Lab',  type: 'ADR',      typeColor: 'purple',    difficulty: 'Advanced',     diffColor: 'danger',  xp: 320, time: '30–50 min' },
 }
 
 export async function GET() {

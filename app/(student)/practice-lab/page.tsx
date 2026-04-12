@@ -6,12 +6,13 @@ import StudentLayout from '@/components/layouts/StudentLayout'
 import api from '@/lib/api'
 
 const ICON_MAP: Record<string, string> = {
-  CLIENT_INTERVIEW:   'tabler-briefcase',
-  CASE_DRAFTING:      'tabler-edit',
-  CONTRACT_DRAFTING:  'tabler-clipboard-text',
-  MOOT_COURT:         'tabler-microphone',
-  LEGAL_RESEARCH:     'tabler-search',
-  COURTROOM_ARGUMENT: 'tabler-scale',
+  CLIENT_INTERVIEW:      'tabler-briefcase',
+  CASE_DRAFTING:         'tabler-edit',
+  CONTRACT_DRAFTING:     'tabler-clipboard-text',
+  MOOT_COURT:            'tabler-microphone',
+  LEGAL_RESEARCH:        'tabler-search',
+  COURTROOM_ARGUMENT:    'tabler-scale',
+  ARBITRATION_MEDIATION: 'tabler-handshake',
 }
 
 export default function PracticeLabPage() {

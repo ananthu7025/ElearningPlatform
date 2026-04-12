@@ -62,6 +62,7 @@ enum PracticeModuleType {
   COURTROOM_ARGUMENT
   MOOT_COURT
   LEGAL_RESEARCH
+  ARBITRATION_MEDIATION
 }
 
 enum AnnouncementStatus {

@@ -6,11 +6,13 @@ import AdminLayout from '@/components/layouts/AdminLayout'
 import ClientInterviewScenarioForm from '@/components/admin/ClientInterviewScenarioForm'
 import CaseDraftScenarioForm from '@/components/admin/CaseDraftScenarioForm'
 import ContractDraftScenarioForm from '@/components/admin/ContractDraftScenarioForm'
+import MediationScenarioForm from '@/components/admin/MediationScenarioForm'
 
 const MODULE_META: Record<string, { title: string; moduleType: string }> = {
-  'client-interview':  { title: 'Client Interview Room', moduleType: 'CLIENT_INTERVIEW' },
-  'case-drafting':     { title: 'Case Drafting Studio',  moduleType: 'CASE_DRAFTING' },
-  'contract-drafting': { title: 'Contract Drafting Desk',moduleType: 'CONTRACT_DRAFTING' },
+  'client-interview':      { title: 'Client Interview Room',       moduleType: 'CLIENT_INTERVIEW' },
+  'case-drafting':         { title: 'Case Drafting Studio',        moduleType: 'CASE_DRAFTING' },
+  'contract-drafting':     { title: 'Contract Drafting Desk',      moduleType: 'CONTRACT_DRAFTING' },
+  'arbitration-mediation': { title: 'Arbitration & Mediation Lab', moduleType: 'ARBITRATION_MEDIATION' },
 }
 
 export default function EditScenarioPage() {
@@ -36,8 +38,9 @@ export default function EditScenarioPage() {
       {moduleType === 'CLIENT_INTERVIEW' && <ClientInterviewScenarioForm {...formProps} />}
       {moduleType === 'CASE_DRAFTING' && <CaseDraftScenarioForm {...formProps} />}
       {moduleType === 'CONTRACT_DRAFTING' && <ContractDraftScenarioForm {...formProps} />}
+      {moduleType === 'ARBITRATION_MEDIATION' && <MediationScenarioForm {...formProps} />}
 
-      {moduleType && !['CLIENT_INTERVIEW', 'CASE_DRAFTING', 'CONTRACT_DRAFTING'].includes(moduleType) && (
+      {moduleType && !['CLIENT_INTERVIEW', 'CASE_DRAFTING', 'CONTRACT_DRAFTING', 'ARBITRATION_MEDIATION'].includes(moduleType) && (
         <div className="card">
           <div className="card-body text-center py-6">
             <p className="text-body-secondary mb-4">

@@ -9,7 +9,9 @@
       "Bash(curl -s http://localhost:8000/health)",
       "Bash(find /Users/ananthu/LMS/ledxElearn -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" -o -name \"*.js\" \\\\\\) ! -path \"*/node_modules/*\" ! -path \"*/.next/*\" -exec grep -l \"AI_SERVICE\\\\|OPENAI\\\\|ANTHROPIC\\\\|GEMINI\\\\|LLM\\\\|streaming\\\\|chat\" {} \\\\;)",
       "Bash(grep -r \"llama\\\\|embedding\\\\|vector\\\\|openai\\\\|anthropic\" /Users/ananthu/LMS/ledxElearn --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.js\" --include=\"*.py\" ! -path \"*/node_modules/*\" ! -path \"*/.next/*\")",
-      "Bash(find /Users/ananthu/LMS/ledxElearn -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" -o -name \"*.py\" \\\\\\) ! -path \"*/node_modules/*\" ! -path \"*/.next/*\" -exec grep -l \"Groq\\\\|LLM\\\\|llama\\\\|interview.*report\\\\|draft.*analyze\" {} \\\\;)"
+      "Bash(find /Users/ananthu/LMS/ledxElearn -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" -o -name \"*.py\" \\\\\\) ! -path \"*/node_modules/*\" ! -path \"*/.next/*\" -exec grep -l \"Groq\\\\|LLM\\\\|llama\\\\|interview.*report\\\\|draft.*analyze\" {} \\\\;)",
+      "Bash(ls /Users/ananthu/LMS/ledxElearn/app/api/practice-lab/scenarios/[id]/)",
+      "Bash(python3 -m ast routes/mediation.py)"
     ],
     "additionalDirectories": [
       "/Users/ananthu/LMS/full-version/assets/vendor/css/pages",

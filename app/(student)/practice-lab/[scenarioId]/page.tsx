@@ -6,6 +6,7 @@ import StudentLayout from '@/components/layouts/StudentLayout'
 import api from '@/lib/api'
 import ClientInterviewChat from '@/components/student/ClientInterviewChat'
 import DraftingStudio from '@/components/student/DraftingStudio'
+import MediationStudio from '@/components/student/MediationStudio'
 
 const DRAFTING_TYPES = ['CASE_DRAFTING', 'CONTRACT_DRAFTING']
 
@@ -26,6 +27,11 @@ export default function ScenarioPage() {
   // Client Interview renders its own full-screen layout too
   if (!isLoading && scenario && scenario.moduleType === 'CLIENT_INTERVIEW') {
     return <ClientInterviewChat scenario={scenario} />
+  }
+
+  // Arbitration / Mediation renders its own full-screen layout
+  if (!isLoading && scenario && scenario.moduleType === 'ARBITRATION_MEDIATION') {
+    return <MediationStudio scenario={scenario} />
   }
 
   // Loading / not found / other modules
