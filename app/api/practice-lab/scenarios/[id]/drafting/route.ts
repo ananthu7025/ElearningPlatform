@@ -27,7 +27,7 @@ const chatBodySchema = z.object({
   messages: z.array(messageSchema).min(1),
 })
 
-const DRAFTING_MODULE_TYPES = ['CASE_DRAFTING', 'CONTRACT_DRAFTING'] as const
+const DRAFTING_MODULE_TYPES: import('@prisma/client').PracticeModuleType[] = ['CASE_DRAFTING', 'CONTRACT_DRAFTING']
 
 export async function POST(
   req: NextRequest,
