@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
         loudness: 1.5,
         speech_sample_rate: 22050,
         enable_preprocessing: true,
-        model: 'bulbul:v1',
+        model: 'bulbul:v2',
       }),
       signal: AbortSignal.timeout(15_000),
     })
