@@ -59,8 +59,8 @@ function resolveVoice(name: string): string {
     'sarita','vandana','mrs','ms.','miss','smt',
   ]
   const isFeminine = femininePatterns.some((p) => lower.includes(p))
-  const female = ['meera','pavithra','maitreyi','aroha','dia'] as const
-  const male   = ['arvind','amol','amartya','neel']            as const
+  const female = ['anushka','manisha','vidya','arya','ritu'] as const
+  const male   = ['abhilash','karun','hitesh','aditya']      as const
   const hash   = lower.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
   return isFeminine ? female[hash % female.length] : male[hash % male.length]
 }
@@ -454,247 +454,365 @@ export default function ClientInterviewChat({ scenario }: Props) {
 
   // ── SCREEN 2: CONSULTATION ──────────────────────────────────────────────────
 
+  // Derive turn number for each assistant message
+  const assistantTurns = messages.reduce((acc, m, i) => {
+    if (m.role === 'assistant') acc.push(i)
+    return acc
+  }, [] as number[])
+
   if (step === 'CONSULTATION') {
     return (
-      <div className="app-chat card overflow-hidden">
-        <div className="row g-0" style={{ minHeight: '78vh' }}>
+      <div className="app-chat card overflow-hidden border-0 shadow-sm">
+        <div className="row g-0" style={{ minHeight: '82vh' }}>
 
-          {/* left: chat */}
-          <div className="col-lg-7 app-chat-history d-flex flex-column">
-            <div className="chat-history-wrapper">
+          {/* ── LEFT: Chat panel ───────────────────────────────────────────── */}
+          <div className="col-lg-7 app-chat-history d-flex flex-column border-end">
+            <div className="chat-history-wrapper d-flex flex-column h-100">
 
-              {/* header */}
-              <div className="chat-history-header border-bottom">
-                <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                  {/* client info */}
-                  <div className="d-flex align-items-center gap-3">
-                    <div className="avatar avatar-sm flex-shrink-0">
-                      <span className="avatar-initial rounded-circle bg-success text-white fw-bold" style={{ fontSize: 12 }}>
-                        {initials}
-                      </span>
-                    </div>
-                    <div>
-                      <h6 className="m-0 fw-semibold" style={{ fontSize: 13 }}>{clientName}</h6>
-                      <small className="text-body-secondary" style={{ fontSize: 10 }}>
-                        {scenario.caseType ?? 'Client Interview'} · AI-powered
-                      </small>
-                    </div>
-                  </div>
+              {/* ── Header ── */}
+              <div className="chat-history-header px-4 py-3 border-bottom">
+                <div className="d-flex align-items-center justify-content-between gap-3">
 
-                  {/* turns counter */}
-                  <div style={{ minWidth: 180 }}>
-                    <div className="d-flex justify-content-between mb-1">
-                      <small className="text-body-secondary" style={{ fontSize: 10 }}>Turns remaining</small>
-                      <small className={`fw-semibold ${turns <= 5 ? 'text-danger' : 'text-primary'}`} style={{ fontSize: 10 }}>
-                        {turns} / {MAX_TURNS}
-                      </small>
-                    </div>
-                    <div className="progress" style={{ height: 5 }}>
+                  {/* Client identity + live status */}
+                  <div className="d-flex align-items-center gap-3 flex-shrink-0">
+                    {/* Avatar — pulses green when speaking */}
+                    <div className="position-relative flex-shrink-0">
                       <div
-                        className={`progress-bar ${turns <= 5 ? 'bg-danger' : 'bg-success'}`}
-                        style={{ width: `${(turns / MAX_TURNS) * 100}%` }}
+                        className={`avatar avatar-md ${speaking ? 'avatar-speaking' : ''}`}
+                        style={{ transition: 'box-shadow .3s' }}
+                      >
+                        <span
+                          className="avatar-initial rounded-circle bg-success text-white fw-bold"
+                          style={{ fontSize: 15 }}
+                        >
+                          {initials}
+                        </span>
+                      </div>
+                      {/* Online dot */}
+                      <span
+                        className="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle"
+                        style={{ width: 10, height: 10 }}
                       />
                     </div>
+
+                    <div>
+                      <div className="d-flex align-items-center gap-2">
+                        <h6 className="mb-0 fw-semibold text-heading" style={{ fontSize: 14 }}>
+                          {clientName}
+                        </h6>
+                        <span className="badge bg-label-success" style={{ fontSize: 9 }}>AI Client</span>
+                      </div>
+
+                      {/* Dynamic status line */}
+                      <div className="d-flex align-items-center gap-1 mt-1" style={{ minHeight: 16 }}>
+                        {speaking && !typing ? (
+                          <>
+                            <span className="d-flex align-items-end gap-1" style={{ height: 14 }}>
+                              {[0, 150, 300].map((d) => (
+                                <span key={d} className="tts-bar" style={{ animationDelay: `${d}ms` }} />
+                              ))}
+                            </span>
+                            <small className="text-success fw-semibold" style={{ fontSize: 10 }}>
+                              Speaking…
+                            </small>
+                          </>
+                        ) : typing ? (
+                          <>
+                            <span className="spinner-grow spinner-grow-sm text-success" style={{ width: 8, height: 8 }} />
+                            <small className="text-body-secondary" style={{ fontSize: 10 }}>Typing…</small>
+                          </>
+                        ) : (
+                          <small className="text-body-secondary" style={{ fontSize: 10 }}>
+                            {scenario.caseType ?? 'Client Interview'}
+                          </small>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
-                  {/* voice + end buttons */}
-                  <div className="d-flex align-items-center gap-2">
+                  {/* Right controls */}
+                  <div className="d-flex align-items-center gap-2 ms-auto">
+
+                    {/* Turns badge */}
+                    <div className="d-none d-md-flex flex-column align-items-end" style={{ minWidth: 130 }}>
+                      <div className="d-flex align-items-center gap-1 mb-1">
+                        <i className={`icon-base ti tabler-messages icon-12px ${turns <= 5 ? 'text-danger' : 'text-body-secondary'}`} />
+                        <small className={`fw-semibold ${turns <= 5 ? 'text-danger' : 'text-body-secondary'}`} style={{ fontSize: 10 }}>
+                          {turns} turns left
+                        </small>
+                      </div>
+                      <div className="progress rounded-pill" style={{ height: 4, width: 130 }}>
+                        <div
+                          className={`progress-bar rounded-pill ${turns <= 5 ? 'bg-danger' : 'bg-success'}`}
+                          style={{ width: `${(turns / MAX_TURNS) * 100}%`, transition: 'width .4s' }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Voice toggle */}
                     <button
                       type="button"
-                      className={`btn btn-sm btn-icon ${voiceEnabled ? 'btn-primary' : 'btn-outline-secondary'}`}
                       onClick={() => setVoiceEnabled((v) => !v)}
                       title={voiceEnabled ? 'Mute AI voice' : 'Unmute AI voice'}
-                      style={{ width: 32, height: 32 }}
+                      className={`btn btn-sm d-flex align-items-center gap-1 px-2 ${
+                        voiceEnabled ? 'btn-label-success' : 'btn-label-secondary'
+                      }`}
+                      style={{ fontSize: 11 }}
                     >
                       <i className={`icon-base ti ${voiceEnabled ? 'tabler-volume' : 'tabler-volume-off'} icon-14px`} />
+                      <span className="d-none d-lg-inline">{voiceEnabled ? 'Voice On' : 'Voice Off'}</span>
                     </button>
+
+                    {/* End interview */}
                     <button
-                      className="btn btn-sm btn-label-secondary d-flex align-items-center gap-1 px-3"
+                      className="btn btn-sm btn-primary d-flex align-items-center gap-1 px-3"
                       onClick={handleEndInterview}
                       disabled={typing || messages.length === 0}
-                      style={{ fontSize: 12 }}
+                      style={{ fontSize: 11 }}
                     >
                       <i className="icon-base ti tabler-checklist icon-14px" />
-                      End Interview
+                      <span className="d-none d-md-inline">End Interview</span>
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* messages */}
-              <div className="chat-history-body">
-                <ul className="list-unstyled chat-history" style={{ maxWidth: 680, margin: '0 auto', padding: '0 1rem' }}>
-                  {messages.map((m, i) =>
-                    m.role === 'assistant' ? (
-                      <li key={i} className="chat-message">
-                        <div className="d-flex overflow-hidden">
-                          <div className="user-avatar flex-shrink-0 me-3">
+              {/* ── Messages ── */}
+              <div className="chat-history-body flex-grow-1 overflow-auto">
+                <ul
+                  className="list-unstyled chat-history mb-0"
+                  style={{ maxWidth: 640, margin: '0 auto', padding: '1.5rem 1.25rem' }}
+                >
+                  {messages.map((m, i) => {
+                    const turnNum = assistantTurns.indexOf(i) + 1
+
+                    return m.role === 'assistant' ? (
+                      <li key={i} className="chat-message mb-4">
+                        <div className="d-flex align-items-start gap-3">
+                          {/* Avatar */}
+                          <div className="flex-shrink-0">
                             <div className="avatar avatar-sm">
-                              <span className="avatar-initial rounded-circle bg-success text-white fw-bold" style={{ fontSize: 11 }}>
+                              <span
+                                className="avatar-initial rounded-circle bg-success text-white fw-bold"
+                                style={{ fontSize: 11 }}
+                              >
                                 {initials}
                               </span>
                             </div>
                           </div>
-                          <div className="chat-message-wrapper flex-grow-1">
-                            <div className="chat-message-text">
-                              <p className="mb-0 small">{m.content}</p>
+                          {/* Bubble */}
+                          <div className="flex-grow-1" style={{ maxWidth: '85%' }}>
+                            <div
+                              className="rounded-3 px-3 py-2 small text-heading"
+                              style={{
+                                background: 'var(--bs-body-bg)',
+                                border: '1px solid var(--bs-border-color)',
+                                lineHeight: 1.65,
+                                display: 'inline-block',
+                                maxWidth: '100%',
+                              }}
+                            >
+                              {m.content || (
+                                <span className="d-flex align-items-center gap-2 text-body-secondary">
+                                  <span className="spinner-grow spinner-grow-sm" style={{ width: 8, height: 8 }} />
+                                  <span style={{ fontSize: 11 }}>Thinking…</span>
+                                </span>
+                              )}
                             </div>
+                            {m.content && turnNum > 0 && (
+                              <div className="interview-turn-label">
+                                Turn {turnNum} of {MAX_TURNS}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </li>
                     ) : (
-                      <li key={i} className="chat-message chat-message-right">
-                        <div className="d-flex overflow-hidden">
-                          <div className="chat-message-wrapper flex-grow-1">
-                            <div className="chat-message-text">
-                              <p className="mb-0 small">{m.content}</p>
+                      <li key={i} className="chat-message chat-message-right mb-4">
+                        <div className="d-flex align-items-start justify-content-end gap-3">
+                          {/* Bubble */}
+                          <div style={{ maxWidth: '85%' }}>
+                            <div
+                              className="rounded-3 px-3 py-2 small text-white"
+                              style={{
+                                background: 'var(--bs-primary)',
+                                lineHeight: 1.65,
+                                display: 'inline-block',
+                                maxWidth: '100%',
+                              }}
+                            >
+                              {m.content}
                             </div>
                           </div>
-                          <div className="user-avatar flex-shrink-0 ms-3">
+                          {/* Avatar */}
+                          <div className="flex-shrink-0">
                             <div className="avatar avatar-sm">
-                              <span className="avatar-initial rounded-circle bg-label-primary fw-bold" style={{ fontSize: 11 }}>You</span>
+                              <span
+                                className="avatar-initial rounded-circle bg-label-primary fw-bold"
+                                style={{ fontSize: 10 }}
+                              >
+                                You
+                              </span>
                             </div>
                           </div>
                         </div>
                       </li>
                     )
-                  )}
-
-                  {typing && (
-                    <li className="chat-message">
-                      <div className="d-flex align-items-center gap-3">
-                        <div className="avatar avatar-sm flex-shrink-0">
-                          <span className="avatar-initial rounded-circle bg-success text-white fw-bold" style={{ fontSize: 11 }}>
-                            {initials}
-                          </span>
-                        </div>
-                        <div className="chat-message-text d-flex align-items-center gap-2">
-                          <span className="spinner-border spinner-border-sm text-success border-2" style={{ width: 12, height: 12 }} />
-                          <small className="text-body-secondary" style={{ fontSize: 11 }}>{clientName.split(' ')[0]} is typing…</small>
-                        </div>
-                      </div>
-                    </li>
-                  )}
-
-                  {speaking && !typing && (
-                    <li className="chat-message">
-                      <div className="d-flex align-items-center gap-3">
-                        <div className="avatar avatar-sm flex-shrink-0">
-                          <span className="avatar-initial rounded-circle bg-success text-white fw-bold" style={{ fontSize: 11 }}>
-                            {initials}
-                          </span>
-                        </div>
-                        <div className="chat-message-text d-flex align-items-center gap-2">
-                          <span className="d-flex gap-1 align-items-end" style={{ height: 14 }}>
-                            {[0, 150, 300].map((delay) => (
-                              <span
-                                key={delay}
-                                className="bg-success rounded-pill"
-                                style={{
-                                  width: 3, height: 10, display: 'inline-block',
-                                  animation: 'tts-bounce 0.8s ease-in-out infinite',
-                                  animationDelay: `${delay}ms`,
-                                }}
-                              />
-                            ))}
-                          </span>
-                          <small className="text-success fw-semibold" style={{ fontSize: 11 }}>{clientName.split(' ')[0]} is speaking…</small>
-                        </div>
-                      </div>
-                    </li>
-                  )}
+                  })}
 
                   <div ref={bottomRef} />
                 </ul>
               </div>
 
-              {/* footer / input */}
-              <div className="chat-history-footer shadow-xs">
-                <div style={{ maxWidth: 680, margin: '0 auto' }}>
-                  <form
-                    className="form-send-message d-flex align-items-center gap-2"
-                    onSubmit={(e) => { e.preventDefault(); handleSend() }}
+              {/* ── Input footer ── */}
+              <div className="chat-history-footer border-top px-4 py-3">
+                <form
+                  className="d-flex align-items-center gap-2"
+                  onSubmit={(e) => { e.preventDefault(); handleSend() }}
+                >
+                  <input
+                    className="form-control border rounded-pill px-4"
+                    style={{ fontSize: 13 }}
+                    placeholder={
+                      turns === 0
+                        ? 'No turns remaining — click End Interview'
+                        : 'Ask the client a question…'
+                    }
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
+                    }}
+                    disabled={turns === 0 || typing}
+                  />
+                  <button
+                    type="submit"
+                    className="btn btn-primary rounded-pill d-flex align-items-center gap-2 px-4 flex-shrink-0"
+                    disabled={turns === 0 || typing || !input.trim()}
+                    style={{ fontSize: 13 }}
                   >
-                    <input
-                      className="form-control message-input border-0 shadow-none flex-grow-1"
-                      placeholder={
-                        turns === 0
-                          ? 'Interview complete — click End Interview'
-                          : 'Ask the client a question…'
-                      }
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
-                      disabled={turns === 0 || typing}
-                    />
-                    <button
-                      type="submit"
-                      className="btn btn-primary d-flex align-items-center gap-2 px-4"
-                      disabled={turns === 0 || typing || !input.trim()}
-                    >
-                      <span>Send</span>
-                      <i className="icon-base ti tabler-send icon-14px" />
-                    </button>
-                  </form>
-                  <div className="text-center mt-2">
-                    <small className="text-body-secondary" style={{ fontSize: 10 }}>
-                      Press <kbd style={{ fontSize: 9, padding: '1px 5px', border: '1px solid currentColor', borderRadius: 3, opacity: .7 }}>Enter ↵</kbd> to send
+                    {typing
+                      ? <span className="spinner-border spinner-border-sm" style={{ width: 14, height: 14 }} />
+                      : <i className="icon-base ti tabler-send icon-14px" />
+                    }
+                    <span className="d-none d-sm-inline">Send</span>
+                  </button>
+                </form>
+
+                <div className="d-flex align-items-center justify-content-between mt-2 px-1">
+                  <small className="text-body-secondary" style={{ fontSize: 10 }}>
+                    <kbd style={{ fontSize: 9, padding: '1px 5px', border: '1px solid currentColor', borderRadius: 3, opacity: .6 }}>
+                      Enter ↵
+                    </kbd>
+                    {' '}to send
+                  </small>
+                  {/* Mobile turns counter */}
+                  <small className={`d-md-none fw-semibold ${turns <= 5 ? 'text-danger' : 'text-body-secondary'}`} style={{ fontSize: 10 }}>
+                    {turns} / {MAX_TURNS} turns
+                  </small>
+                  {voiceEnabled && (
+                    <small className="d-none d-md-flex align-items-center gap-1 text-success" style={{ fontSize: 10 }}>
+                      <i className="icon-base ti tabler-volume icon-10px" />
+                      AI voice active
                     </small>
-                  </div>
+                  )}
                 </div>
               </div>
+
             </div>
           </div>
 
-          {/* right: notepad + provisions */}
-          <div className="col-lg-5 d-flex flex-column border-start overflow-auto">
-            <div className="border-bottom px-4 d-flex align-items-center justify-content-between flex-shrink-0" style={{ height: 56 }}>
+          {/* ── RIGHT: Legal pad ───────────────────────────────────────────── */}
+          <div className="col-lg-5 d-flex flex-column overflow-hidden">
+
+            {/* Panel header */}
+            <div
+              className="px-4 d-flex align-items-center justify-content-between flex-shrink-0 border-bottom"
+              style={{ height: 57 }}
+            >
               <div className="d-flex align-items-center gap-2">
                 <i className="icon-base ti tabler-notes icon-16px text-warning" />
-                <span className="fw-semibold text-heading small">Clinician's Legal Pad</span>
+                <span className="fw-semibold text-heading" style={{ fontSize: 13 }}>
+                  Clinician's Legal Pad
+                </span>
               </div>
-              <span className="badge bg-label-secondary" style={{ fontSize: 10 }}>
+              <span className="badge bg-label-warning" style={{ fontSize: 9 }}>
                 <i className="icon-base ti tabler-lock icon-10px me-1" />Confidential
               </span>
             </div>
 
             <div className="flex-grow-1 overflow-auto p-3 d-flex flex-column gap-3">
-              {/* notepad */}
-              <div className="card border shadow-none">
-                <div className="card-header border-0 pb-0">
-                  <h6 className="mb-0 small fw-semibold d-flex align-items-center gap-2">
+
+              {/* Case notes */}
+              <div className="card border-0 shadow-none rounded-3" style={{ background: 'rgba(255,193,7,.04)' }}>
+                <div className="card-header border-0 pb-0 bg-transparent">
+                  <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontSize: 12 }}>
                     <i className="icon-base ti tabler-pencil icon-14px text-warning" />
                     Case Notes
                   </h6>
                 </div>
                 <div className="card-body pt-2">
                   <textarea
-                    className="form-control border-0 shadow-none p-2"
-                    rows={7}
-                    placeholder="Jot down discovered facts, key observations…"
+                    className="form-control border-0 shadow-none p-0"
+                    rows={8}
+                    placeholder="Jot down discovered facts and key observations…"
                     value={notepad}
                     onChange={(e) => setNotepad(e.target.value)}
-                    style={{ resize: 'none', fontSize: 13, lineHeight: 1.9, background: 'rgba(255,193,7,.05)', borderRadius: 6 }}
+                    style={{
+                      resize: 'none',
+                      fontSize: 13,
+                      lineHeight: 1.9,
+                      background: 'transparent',
+                    }}
                   />
                 </div>
               </div>
 
-              {/* provisions */}
+              {/* Provisions */}
               {provisions.length > 0 && (
-                <div className="card border shadow-none">
+                <div className="card border shadow-none rounded-3">
                   <div className="card-header border-0 pb-0">
-                    <h6 className="mb-0 small fw-semibold d-flex align-items-center gap-2">
+                    <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontSize: 12 }}>
                       <i className="icon-base ti tabler-gavel icon-14px text-primary" />
                       Relevant Provisions
                     </h6>
                   </div>
                   <div className="card-body pt-2 d-flex flex-wrap gap-1">
-                    {provisions.map((p, i) => (
-                      <span key={i} className="badge bg-label-primary" style={{ fontSize: 10 }}>{p}</span>
+                    {provisions.map((p, idx) => (
+                      <span key={idx} className="badge bg-label-primary" style={{ fontSize: 10 }}>
+                        {p}
+                      </span>
                     ))}
                   </div>
                 </div>
               )}
+
+              {/* Turns summary card */}
+              <div className="card border shadow-none rounded-3">
+                <div className="card-body py-3 px-4">
+                  <div className="d-flex align-items-center justify-content-between mb-2">
+                    <small className="fw-semibold text-heading" style={{ fontSize: 11 }}>Interview Progress</small>
+                    <span
+                      className={`badge ${turns <= 5 ? 'bg-label-danger' : 'bg-label-success'}`}
+                      style={{ fontSize: 10 }}
+                    >
+                      {MAX_TURNS - turns} / {MAX_TURNS} turns used
+                    </span>
+                  </div>
+                  <div className="progress rounded-pill" style={{ height: 6 }}>
+                    <div
+                      className={`progress-bar rounded-pill ${turns <= 5 ? 'bg-danger' : 'bg-primary'}`}
+                      style={{ width: `${((MAX_TURNS - turns) / MAX_TURNS) * 100}%`, transition: 'width .4s' }}
+                    />
+                  </div>
+                  <small className="text-body-secondary mt-1 d-block" style={{ fontSize: 10 }}>
+                    {turns === 0
+                      ? 'All turns used — end the interview to see your report.'
+                      : `${turns} turn${turns !== 1 ? 's' : ''} remaining to discover key facts.`}
+                  </small>
+                </div>
+              </div>
+
             </div>
           </div>
 

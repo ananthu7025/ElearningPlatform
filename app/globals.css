@@ -8,8 +8,37 @@
   height: 64px;
 }
 
-/* TTS speaking indicator bars */
-@keyframes tts-bounce {
-  0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
-  50%       { transform: scaleY(1);   opacity: 1;   }
+/* ── Client Interview TTS ──────────────────────────────────────────────── */
+
+/* Pulsing ring on avatar when client is speaking */
+@keyframes speaking-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(40, 199, 111, 0.7); }
+  70%  { box-shadow: 0 0 0 8px rgba(40, 199, 111, 0);   }
+  100% { box-shadow: 0 0 0 0   rgba(40, 199, 111, 0);   }
+}
+.avatar-speaking {
+  animation: speaking-pulse 1.2s ease-out infinite;
+  border-radius: 50%;
+}
+
+/* Animated sound-wave bars (3 bars) inside the header status */
+@keyframes tts-bar {
+  0%, 100% { height: 4px;  opacity: 0.4; }
+  50%       { height: 14px; opacity: 1;   }
+}
+.tts-bar {
+  display: inline-block;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--bs-success);
+  animation: tts-bar 0.8s ease-in-out infinite;
+}
+
+/* Interview chat message turn label */
+.interview-turn-label {
+  font-size: 10px;
+  color: var(--bs-body-secondary);
+  margin-top: 4px;
+  padding-left: 4px;
+  opacity: 0.7;
 }

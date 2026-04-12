@@ -11,8 +11,13 @@ const SARVAM_KEY = process.env.SARVAM_API_KEY ?? ''
 const MAX_CHUNK_CHARS = 500
 
 const ALLOWED_SPEAKERS = new Set([
-  'meera', 'pavithra', 'maitreyi', 'aroha', 'dia',
-  'arvind', 'amol', 'amartya', 'neel',
+  'anushka', 'manisha', 'vidya', 'arya', 'ritu', 'priya', 'neha', 'ishita',
+  'shreya', 'tanya', 'shruti', 'suhani', 'kavitha', 'rupali', 'roopa',
+  'simran', 'kavya', 'pooja', 'sophia', 'amelia',
+  'abhilash', 'karun', 'hitesh', 'aditya', 'rahul', 'rohan', 'amit', 'dev',
+  'ratan', 'varun', 'manan', 'sumit', 'kabir', 'aayan', 'shubh', 'ashutosh',
+  'advait', 'anand', 'tarun', 'sunny', 'mani', 'gokul', 'vijay', 'mohit',
+  'rehan', 'soham',
 ])
 
 const ALLOWED_LANG_CODES = new Set([
@@ -37,7 +42,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     text         = String(body.text ?? '').trim().slice(0, 1000)
-    speaker      = ALLOWED_SPEAKERS.has(body.speaker) ? body.speaker : 'meera'
+    speaker      = ALLOWED_SPEAKERS.has(body.speaker) ? body.speaker : 'anushka'
     languageCode = ALLOWED_LANG_CODES.has(body.languageCode) ? body.languageCode : 'en-IN'
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
