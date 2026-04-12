@@ -331,9 +331,10 @@ export default function AnnouncementsPage() {
                 ))
               ) : announcements.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-6 text-body-secondary">
-                    <i className="ti tabler-speakerphone fs-2 d-block mb-2 opacity-50"></i>
-                    No announcements found
+                  <td colSpan={6} className="text-center py-8">
+                    <img src="/img/illustrations/girl-app-academy.png" alt="No announcements" height={120} className="img-fluid mb-3" />
+                    <p className="fw-semibold text-heading mb-1">No Announcements Found</p>
+                    <p className="text-body-secondary small mb-0">Create an announcement to notify your students.</p>
                   </td>
                 </tr>
               ) : (

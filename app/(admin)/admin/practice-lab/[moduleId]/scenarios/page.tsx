@@ -210,15 +210,16 @@ export default function AdminScenariosPage() {
                 ))
               ) : scenarios.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-6 text-body-secondary">
-                    <i className="ti tabler-file-off fs-2 d-block mb-2 opacity-50"></i>
-                    No scenarios found
+                  <td colSpan={9} className="text-center py-8">
+                    <img src="/img/illustrations/girl-sitting-with-laptop.png" alt="No scenarios" height={120} className="img-fluid mb-3" />
+                    <p className="fw-semibold text-heading mb-1">No Scenarios Found</p>
+                    <p className="text-body-secondary small mb-2">
+                      {filter !== 'all' ? 'No scenarios match the current filter.' : 'Create a scenario to get started.'}
+                    </p>
                     {filter !== 'all' && (
-                      <div className="mt-2">
-                        <button className="btn btn-sm btn-outline-secondary" onClick={() => setFilter('all')}>
-                          Clear filter
-                        </button>
-                      </div>
+                      <button className="btn btn-sm btn-outline-secondary" onClick={() => setFilter('all')}>
+                        Clear Filter
+                      </button>
                     )}
                   </td>
                 </tr>

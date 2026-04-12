@@ -273,11 +273,10 @@ export default function PaymentsPage() {
                   </div>
                 ))
               ) : payments.length === 0 ? (
-                <div className="text-center py-6">
-                  <div className="d-flex align-items-center justify-content-center rounded-circle mx-auto mb-3" style={{ width: 64, height: 64, background: '#7367F015' }}>
-                    <i className="ti tabler-receipt-off" style={{ fontSize: 28, color: '#7367F0' }}></i>
-                  </div>
-                  <p className="text-body-secondary">No transactions found.</p>
+                <div className="text-center py-8">
+                  <img src="/img/illustrations/girl-doing-yoga-light.png" alt="No transactions" height={140} className="img-fluid mb-4" />
+                  <h6 className="mb-1">No Transactions Found</h6>
+                  <p className="text-body-secondary small mb-0">Try adjusting your filters or date range.</p>
                 </div>
               ) : (
                 payments.map((p, i) => {

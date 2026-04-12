@@ -103,8 +103,11 @@ export default function AdminSettingsPage() {
   if (isLoading) {
     return (
       <div className="container-xxl flex-grow-1 container-p-y">
-        <div className="text-center py-5">
-          <div className="spinner-border text-primary" />
+        <div className="card">
+          <div className="card-body text-center py-8">
+            <div className="spinner-border text-primary mb-3" />
+            <p className="text-body-secondary mb-0">Loading settings…</p>
+          </div>
         </div>
       </div>
     )
@@ -290,9 +293,10 @@ export default function AdminSettingsPage() {
             </div>
             <div className="card-body p-0">
               {!courseData || courseData.length === 0 ? (
-                <div className="text-center py-5 text-muted">
-                  <i className="tabler-book mb-2" style={{ fontSize: '2rem', display: 'block' }} />
-                  <p className="mb-0">No published courses yet.</p>
+                <div className="text-center py-8">
+                  <img src="/img/illustrations/boy-with-laptop-light.png" alt="No courses" height={130} className="img-fluid mb-3" />
+                  <p className="fw-semibold text-heading mb-1">No Published Courses</p>
+                  <p className="text-body-secondary small mb-0">Publish a course first to manage its visibility here.</p>
                 </div>
               ) : (
                 <div className="table-responsive">

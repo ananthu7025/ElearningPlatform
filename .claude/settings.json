@@ -11,7 +11,8 @@
       "Bash(grep -r \"llama\\\\|embedding\\\\|vector\\\\|openai\\\\|anthropic\" /Users/ananthu/LMS/ledxElearn --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.js\" --include=\"*.py\" ! -path \"*/node_modules/*\" ! -path \"*/.next/*\")",
       "Bash(find /Users/ananthu/LMS/ledxElearn -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" -o -name \"*.py\" \\\\\\) ! -path \"*/node_modules/*\" ! -path \"*/.next/*\" -exec grep -l \"Groq\\\\|LLM\\\\|llama\\\\|interview.*report\\\\|draft.*analyze\" {} \\\\;)",
       "Bash(ls /Users/ananthu/LMS/ledxElearn/app/api/practice-lab/scenarios/[id]/)",
-      "Bash(python3 -m ast routes/mediation.py)"
+      "Bash(python3 -m ast routes/mediation.py)",
+      "Bash(grep -r \"text-center.*py\" /Users/ananthu/LMS/ledxElearn/app/\\\\\\(admin\\\\\\)/admin/*.tsx --include=\"*.tsx\")"
     ],
     "additionalDirectories": [
       "/Users/ananthu/LMS/full-version/assets/vendor/css/pages",

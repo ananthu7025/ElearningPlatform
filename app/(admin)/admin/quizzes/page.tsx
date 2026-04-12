@@ -74,7 +74,13 @@ export default function AdminQuizAttemptsPage() {
               {isLoading ? (
                 <tr><td colSpan={6} className="text-center py-10"><div className="spinner-border spinner-border-sm text-primary" /></td></tr>
               ) : data?.attempts?.length === 0 ? (
-                <tr><td colSpan={6} className="text-center py-10 text-body-secondary">No submissions found.</td></tr>
+                <tr>
+                  <td colSpan={6} className="text-center py-8">
+                    <img src="/img/illustrations/girl-with-laptop-light.png" alt="No submissions" height={120} className="img-fluid mb-3" />
+                    <p className="fw-semibold text-heading mb-1">No Submissions Yet</p>
+                    <p className="text-body-secondary small mb-0">Student quiz submissions will appear here.</p>
+                  </td>
+                </tr>
               ) : (
                 data?.attempts?.map((attempt: any) => (
                   <tr key={attempt.id}>

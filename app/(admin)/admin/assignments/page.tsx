@@ -127,9 +127,15 @@ export default function AdminAssignmentsPage() {
 
         <div className="card-body p-0">
           {isLoading ? (
-            <div className="p-10 text-center py-20"><div className="spinner-border text-primary" /></div>
+            <div className="text-center py-8">
+              <div className="spinner-border text-primary" />
+            </div>
           ) : filtered.length === 0 ? (
-            <div className="p-10 text-center py-20 text-body-secondary">No assignments found matching criteria.</div>
+            <div className="text-center py-8">
+              <img src="/img/illustrations/girl-sitting-with-laptop.png" alt="No assignments" height={140} className="img-fluid mb-4" />
+              <h6 className="mb-1">No Assignments Found</h6>
+              <p className="text-body-secondary small mb-0">No assignments match your current filters.</p>
+            </div>
           ) : (
             <div className="accordion accordion-flush" id="assignmentList">
               {filtered.map((a: any) => (

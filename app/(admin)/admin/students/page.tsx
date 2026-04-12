@@ -351,9 +351,10 @@ export default function StudentsPage() {
                 ))
               ) : students.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-6 text-body-secondary">
-                    <i className="ti tabler-users-off fs-2 d-block mb-2 opacity-50"></i>
-                    No students found
+                  <td colSpan={8} className="text-center py-8">
+                    <img src="/img/illustrations/boy-app-academy.png" alt="No students" height={120} className="img-fluid mb-3" />
+                    <p className="fw-semibold text-heading mb-1">No Students Found</p>
+                    <p className="text-body-secondary small mb-0">No students match your current search or filters.</p>
                   </td>
                 </tr>
               ) : (

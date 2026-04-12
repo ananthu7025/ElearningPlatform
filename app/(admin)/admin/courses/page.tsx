@@ -151,7 +151,11 @@ export default function CoursesPage() {
                 ))}
               </div>
             ) : filtered.length === 0 ? (
-              <div className="text-center py-5 text-body-secondary">No courses found</div>
+              <div className="text-center py-8">
+                <img src="/img/illustrations/boy-app-academy.png" alt="No courses" height={140} className="img-fluid mb-3" />
+                <p className="fw-semibold text-heading mb-1">No Courses Found</p>
+                <p className="text-body-secondary small mb-0">Try adjusting your search or filters.</p>
+              </div>
             ) : (
               <div className="row gy-6">
                 {filtered.map((c: any) => {
@@ -235,7 +239,13 @@ export default function CoursesPage() {
                     <tr key={i}>{Array.from({ length: 7 }).map((_, j) => <td key={j}><span className="placeholder col-8" /></td>)}</tr>
                   ))
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={7} className="text-center py-5 text-body-secondary">No courses found</td></tr>
+                  <tr>
+                    <td colSpan={7} className="text-center py-8">
+                      <img src="/img/illustrations/boy-app-academy.png" alt="No courses" height={120} className="img-fluid mb-3" />
+                      <p className="fw-semibold text-heading mb-1">No Courses Found</p>
+                      <p className="text-body-secondary small mb-0">Try adjusting your search or filters.</p>
+                    </td>
+                  </tr>
                 ) : (
                   filtered.map((c: any) => {
                     const meta     = STATUS_META[c.status as keyof typeof STATUS_META] ?? { badge: 'bg-label-secondary', label: c.status, color: 'secondary' }
