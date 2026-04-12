@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 
 from routes.chat import router as chat_router
 from routes.interview import router as interview_router
+from routes.drafting import router as drafting_router
 
 app = FastAPI(title="LedX AI Service", version="1.0.0")
 
@@ -40,6 +41,7 @@ async def verify_internal_key(request: Request, call_next):
 # ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(chat_router)
 app.include_router(interview_router)
+app.include_router(drafting_router)
 
 
 @app.get("/health")

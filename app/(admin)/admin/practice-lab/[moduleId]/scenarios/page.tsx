@@ -161,7 +161,7 @@ export default function AdminScenariosPage() {
             <p className="mb-0 text-body">{scenarios.length} scenarios in this module</p>
           </div>
           <div className="d-flex align-items-center gap-3 flex-wrap">
-            {moduleId === 'client-interview' && moduleType === 'CLIENT_INTERVIEW' && (
+            {['CLIENT_INTERVIEW', 'CASE_DRAFTING', 'CONTRACT_DRAFTING'].includes(moduleType) && (
               <Link
                 href={`/admin/practice-lab/${moduleId}/scenarios/new?type=${moduleType}`}
                 className="btn btn-primary btn-sm"
@@ -304,7 +304,7 @@ export default function AdminScenariosPage() {
                           <i className="ti tabler-dots-vertical"></i>
                         </button>
                         <div className="dropdown-menu dropdown-menu-end">
-                          {moduleId === 'client-interview' && moduleType === 'CLIENT_INTERVIEW' && (
+                          {['CLIENT_INTERVIEW', 'CASE_DRAFTING', 'CONTRACT_DRAFTING'].includes(moduleType) && (
                             <>
                               <Link
                                 className="dropdown-item"
