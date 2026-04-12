@@ -31,10 +31,22 @@ export default function MyCoursesPage() {
           ))}
         </div>
       ) : enrollments.length === 0 ? (
-        <div className="text-center py-5 text-body-secondary">
-          <i className="ti tabler-book mb-2" style={{ fontSize: 48 }} />
-          <h6 className="mt-2">No courses yet</h6>
-          <Link href="/courses/browse" className="btn btn-primary mt-2">Browse Courses</Link>
+        <div className="card">
+          <div className="card-body text-center py-8">
+            <img
+              src="/img/illustrations/boy-with-rocket-light.png"
+              alt="No courses enrolled"
+              height={200}
+              className="img-fluid mb-4"
+            />
+            <h5 className="mb-2">Ready to Launch Your Learning?</h5>
+            <p className="text-body-secondary mb-4">
+              You haven't enrolled in any courses yet. Explore our catalog and start your legal education journey.
+            </p>
+            <Link href="/courses/browse" className="btn btn-primary">
+              <i className="ti tabler-search me-1" />Browse Courses
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="row g-6">

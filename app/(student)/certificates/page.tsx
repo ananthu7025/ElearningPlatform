@@ -17,10 +17,22 @@ export default function CertificatesPage() {
       {isLoading ? (
         <div className="d-flex justify-content-center py-5"><div className="spinner-border text-primary" role="status" /></div>
       ) : certificates.length === 0 ? (
-        <div className="text-center py-5 text-body-secondary">
-          <i className="ti tabler-certificate mb-2" style={{ fontSize: 48 }} />
-          <h6 className="mt-2">No certificates yet</h6>
-          <p className="small">Complete a course to earn your certificate</p>
+        <div className="card">
+          <div className="card-body text-center py-8">
+            <img
+              src="/img/illustrations/girl-app-academy.png"
+              alt="No certificates"
+              height={200}
+              className="img-fluid mb-4"
+            />
+            <h5 className="mb-2">No Certificates Yet</h5>
+            <p className="text-body-secondary mb-4">
+              Complete any enrolled course to earn your certificate and showcase your achievement.
+            </p>
+            <a href="/courses" className="btn btn-primary">
+              <i className="ti tabler-book me-1" />Go to My Courses
+            </a>
+          </div>
         </div>
       ) : (
         <div className="row g-6">

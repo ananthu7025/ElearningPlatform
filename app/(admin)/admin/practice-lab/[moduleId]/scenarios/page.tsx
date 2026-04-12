@@ -35,12 +35,13 @@ interface Stats {
 // ── Module metadata by slug (matches ids from the main page) ──────────────────
 
 const MODULE_META: Record<string, { title: string; icon: string; color: string; moduleType: string }> = {
-  'client-interview':    { title: 'Client Interview Room',       icon: 'tabler-briefcase',    color: 'success',   moduleType: 'CLIENT_INTERVIEW'    },
-  'case-drafting':       { title: 'Case Drafting Studio',        icon: 'tabler-edit',         color: 'primary',   moduleType: 'CASE_DRAFTING'       },
-  'contract-drafting':   { title: 'Contract Drafting Desk',      icon: 'tabler-clipboard-text', color: 'warning', moduleType: 'CONTRACT_DRAFTING'   },
-  'moot-court':          { title: 'Moot Court Simulator',        icon: 'tabler-microphone',   color: 'danger',    moduleType: 'MOOT_COURT'          },
-  'legal-research':      { title: 'Legal Research Arena',        icon: 'tabler-search',       color: 'info',      moduleType: 'LEGAL_RESEARCH'      },
-  'courtroom-argument':  { title: 'Courtroom Argument Builder',  icon: 'tabler-scale',        color: 'secondary', moduleType: 'COURTROOM_ARGUMENT'  },
+  'client-interview':      { title: 'Client Interview Room',       icon: 'tabler-briefcase',      color: 'success',   moduleType: 'CLIENT_INTERVIEW'      },
+  'case-drafting':         { title: 'Case Drafting Studio',        icon: 'tabler-edit',           color: 'primary',   moduleType: 'CASE_DRAFTING'         },
+  'contract-drafting':     { title: 'Contract Drafting Desk',      icon: 'tabler-clipboard-text', color: 'warning',   moduleType: 'CONTRACT_DRAFTING'     },
+  'moot-court':            { title: 'Moot Court Simulator',        icon: 'tabler-microphone',     color: 'danger',    moduleType: 'MOOT_COURT'            },
+  'legal-research':        { title: 'Legal Research Arena',        icon: 'tabler-search',         color: 'info',      moduleType: 'LEGAL_RESEARCH'        },
+  'courtroom-argument':    { title: 'Courtroom Argument Builder',  icon: 'tabler-scale',          color: 'secondary', moduleType: 'COURTROOM_ARGUMENT'    },
+  'arbitration-mediation': { title: 'Arbitration & Mediation Lab', icon: 'tabler-handshake',      color: 'primary',   moduleType: 'ARBITRATION_MEDIATION' },
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -161,7 +162,7 @@ export default function AdminScenariosPage() {
             <p className="mb-0 text-body">{scenarios.length} scenarios in this module</p>
           </div>
           <div className="d-flex align-items-center gap-3 flex-wrap">
-            {['CLIENT_INTERVIEW', 'CASE_DRAFTING', 'CONTRACT_DRAFTING'].includes(moduleType) && (
+            {['CLIENT_INTERVIEW', 'CASE_DRAFTING', 'CONTRACT_DRAFTING', 'ARBITRATION_MEDIATION'].includes(moduleType) && (
               <Link
                 href={`/admin/practice-lab/${moduleId}/scenarios/new?type=${moduleType}`}
                 className="btn btn-primary btn-sm"
@@ -304,7 +305,7 @@ export default function AdminScenariosPage() {
                           <i className="ti tabler-dots-vertical"></i>
                         </button>
                         <div className="dropdown-menu dropdown-menu-end">
-                          {['CLIENT_INTERVIEW', 'CASE_DRAFTING', 'CONTRACT_DRAFTING'].includes(moduleType) && (
+                          {['CLIENT_INTERVIEW', 'CASE_DRAFTING', 'CONTRACT_DRAFTING', 'ARBITRATION_MEDIATION'].includes(moduleType) && (
                             <>
                               <Link
                                 className="dropdown-item"

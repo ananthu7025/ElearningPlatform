@@ -214,9 +214,23 @@ export default function CourseBrowsePage() {
                 ))}
               </div>
             ) : filteredCourses.length === 0 ? (
-              <div className="text-center py-12 text-body-secondary">
-                <i className="ti tabler-search mb-2" style={{ fontSize: 48 }}></i>
-                <p>No courses found matching your criteria</p>
+              <div className="text-center py-6">
+                <img
+                  src="/img/illustrations/girl-doing-yoga-light.png"
+                  alt="No results"
+                  height={180}
+                  className="img-fluid mb-4"
+                />
+                <h5 className="mb-2">No Courses Found</h5>
+                <p className="text-body-secondary mb-4">
+                  We couldn't find any courses matching your search. Try a different keyword or category.
+                </p>
+                <button
+                  className="btn btn-outline-primary btn-sm"
+                  onClick={() => { setSearch(''); setCategory('') }}
+                >
+                  <i className="ti tabler-refresh me-1" />Clear Filters
+                </button>
               </div>
             ) : (
               <div className="row gy-6 mb-6">

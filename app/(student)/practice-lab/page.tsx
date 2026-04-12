@@ -146,10 +146,13 @@ export default function PracticeLabPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="card">
-          <div className="card-body text-center py-6">
-            <span className="avatar avatar-xl bg-label-secondary rounded-circle mb-4 d-inline-flex align-items-center justify-content-center">
-              <i className="ti tabler-flask-off icon-36px text-secondary" />
-            </span>
+          <div className="card-body text-center py-8">
+            <img
+              src="/img/illustrations/girl-sitting-with-laptop.png"
+              alt="No scenarios"
+              height={200}
+              className="img-fluid mb-4"
+            />
             <h5 className="mb-2">No Scenarios Available</h5>
             <p className="text-body-secondary mb-4">
               {activeFilter === 'ALL'
@@ -158,7 +161,7 @@ export default function PracticeLabPage() {
             </p>
             {activeFilter !== 'ALL' && (
               <button className="btn btn-outline-primary btn-sm" onClick={() => setActiveFilter('ALL')}>
-                View All Scenarios
+                <i className="ti tabler-arrow-left me-1" />View All Scenarios
               </button>
             )}
           </div>
