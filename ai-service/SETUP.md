@@ -179,16 +179,23 @@ If the service runs on a different machine or port, replace `localhost:8000` acc
 
 ## API Endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/health` | Health check — no auth required |
-| POST | `/chat` | Generic chat — SSE stream |
-| POST | `/interview/chat` | Client roleplay — SSE stream |
-| POST | `/interview/report` | Evaluation report — JSON |
+| Method | Path | Description | Response |
+|--------|------|-------------|----------|
+| GET | `/health` | Health check — no auth required | JSON |
+| POST | `/chat` | LexAI tutor chat | SSE stream |
+| POST | `/interview/chat` | Client interview roleplay | SSE stream |
+| POST | `/interview/report` | Interview evaluation report | JSON |
+| POST | `/drafting/analyze` | Draft evaluation report | JSON |
+| POST | `/drafting/chat` | Draft tutor chat | SSE stream |
 
 All endpoints (except `/health`) require the header:
 ```
 x-internal-key: <INTERNAL_SECRET>
+```
+
+Health check response format:
+```json
+{"status": "ok", "version": "2.0.0"}
 ```
 
 ---

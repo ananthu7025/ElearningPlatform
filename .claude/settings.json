@@ -5,7 +5,11 @@
       "Bash(mkdir -p /Users/ananthu/LMS/ledxElearn/app/api/admin/practice-lab/\\\\[moduleType\\\\]/toggle)",
       "Bash(mkdir -p /Users/ananthu/LMS/ledxElearn/app/api/admin/practice-lab/\\\\[moduleType\\\\]/scenarios)",
       "Bash(mkdir -p /Users/ananthu/LMS/ledxElearn/app/api/admin/practice-lab/\\\\[moduleType\\\\]/scenarios/\\\\[id\\\\])",
-      "Bash(nc -zv 163.5.191.138 5432 -w 5)"
+      "Bash(nc -zv 163.5.191.138 5432 -w 5)",
+      "Bash(curl -s http://localhost:8000/health)",
+      "Bash(find /Users/ananthu/LMS/ledxElearn -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" -o -name \"*.js\" \\\\\\) ! -path \"*/node_modules/*\" ! -path \"*/.next/*\" -exec grep -l \"AI_SERVICE\\\\|OPENAI\\\\|ANTHROPIC\\\\|GEMINI\\\\|LLM\\\\|streaming\\\\|chat\" {} \\\\;)",
+      "Bash(grep -r \"llama\\\\|embedding\\\\|vector\\\\|openai\\\\|anthropic\" /Users/ananthu/LMS/ledxElearn --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.js\" --include=\"*.py\" ! -path \"*/node_modules/*\" ! -path \"*/.next/*\")",
+      "Bash(find /Users/ananthu/LMS/ledxElearn -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" -o -name \"*.py\" \\\\\\) ! -path \"*/node_modules/*\" ! -path \"*/.next/*\" -exec grep -l \"Groq\\\\|LLM\\\\|llama\\\\|interview.*report\\\\|draft.*analyze\" {} \\\\;)"
     ],
     "additionalDirectories": [
       "/Users/ananthu/LMS/full-version/assets/vendor/css/pages",
