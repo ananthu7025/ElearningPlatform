@@ -3,8 +3,7 @@
  * POST { text, speaker?, languageCode? } → audio/wav binary
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getRequestUser } from '@/lib/auth'
 
 const SARVAM_URL = 'https://api.sarvam.ai/text-to-speech'
 const SARVAM_KEY = process.env.SARVAM_API_KEY ?? ''
@@ -22,8 +21,8 @@ const ALLOWED_LANG_CODES = new Set([
 ])
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session) {
+  const user = await getRequestUser()
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
