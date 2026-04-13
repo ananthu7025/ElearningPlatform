@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"c:/Users/Anathapadmanabhan/Desktop/ElearningPlatform/app/\\(admin\\)/admin/practice-lab/[moduleId]/scenarios/\")"
+    ]
+  }
+}

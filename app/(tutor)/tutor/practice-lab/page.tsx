@@ -16,9 +16,10 @@ type GradeForm = z.infer<typeof gradeSchema>
 
 const AVATAR_COLORS = ['bg-label-primary','bg-label-success','bg-label-info','bg-label-warning','bg-label-danger']
 const MODULES_AVAILABLE = [
-  { id: 'client-interview',  title: 'Client Interview Room',  color: 'success', icon: 'tabler-briefcase'      },
-  { id: 'case-drafting',     title: 'Case Drafting Studio',   color: 'primary', icon: 'tabler-edit'           },
-  { id: 'contract-drafting', title: 'Contract Drafting Desk', color: 'warning', icon: 'tabler-clipboard-text' },
+  { id: 'client-interview',      title: 'Client Interview Room',       color: 'success', icon: 'tabler-briefcase'      },
+  { id: 'case-drafting',         title: 'Case Drafting Studio',        color: 'primary', icon: 'tabler-edit'           },
+  { id: 'contract-drafting',     title: 'Contract Drafting Desk',      color: 'warning', icon: 'tabler-clipboard-text' },
+  { id: 'arbitration-mediation', title: 'Arbitration & Mediation Lab', color: 'info',    icon: 'tabler-handshake'      },
 ]
 
 function scoreColor(score: number) {
