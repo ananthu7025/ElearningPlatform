@@ -76,7 +76,7 @@ export default function AdminQuizAttemptsPage() {
               ) : data?.attempts?.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-8">
-                    <img src="/img/illustrations/girl-with-laptop-light.png" alt="No submissions" height={120} className="img-fluid mb-3" />
+                    <img src="/img/illustrations/girl-with-laptop-light.png" alt="No submissions" height={120} style={{ width: 'auto' }} className="mb-3" />
                     <p className="fw-semibold text-heading mb-1">No Submissions Yet</p>
                     <p className="text-body-secondary small mb-0">Student quiz submissions will appear here.</p>
                   </td>

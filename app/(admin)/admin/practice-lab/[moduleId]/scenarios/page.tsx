@@ -211,7 +211,7 @@ export default function AdminScenariosPage() {
               ) : scenarios.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="text-center py-8">
-                    <img src="/img/illustrations/girl-sitting-with-laptop.png" alt="No scenarios" height={120} className="img-fluid mb-3" />
+                    <img src="/img/illustrations/girl-sitting-with-laptop.png" alt="No scenarios" height={120} style={{ width: 'auto' }} className="mb-3" />
                     <p className="fw-semibold text-heading mb-1">No Scenarios Found</p>
                     <p className="text-body-secondary small mb-2">
                       {filter !== 'all' ? 'No scenarios match the current filter.' : 'Create a scenario to get started.'}

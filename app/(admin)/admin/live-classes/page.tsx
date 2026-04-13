@@ -210,7 +210,7 @@ export default function LiveClassesPage() {
               ) : displayed.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-8">
-                    <img src="/img/illustrations/boy-with-laptop-light.png" alt="No live classes" height={120} className="img-fluid mb-3" />
+                    <img src="/img/illustrations/boy-with-laptop-light.png" alt="No live classes" height={120} style={{ width: 'auto' }} className="mb-3" />
                     <p className="fw-semibold text-heading mb-1">No Live Classes Found</p>
                     <p className="text-body-secondary small mb-0">Schedule a live class to see it listed here.</p>
                   </td>
