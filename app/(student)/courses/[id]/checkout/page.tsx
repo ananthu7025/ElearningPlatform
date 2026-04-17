@@ -34,7 +34,7 @@ export default function CheckoutPage() {
             key: data.keyId,
             amount: data.amount,
             currency: data.currency,
-            name: 'LexEd Learning',
+            name: 'LedeX Learning',
             description: `Enrollment: ${course?.title}`,
             order_id: data.orderId,
             handler: async (response: any) => {
@@ -104,7 +104,7 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex-grow-1">
                     <h6 className="fw-bold text-heading mb-1">{course.title}</h6>
-                    <p className="extra-small text-body-secondary mb-3">By {course.tutor?.name || 'LexEd Instructor'} • Lifetime Access</p>
+                    <p className="extra-small text-body-secondary mb-3">By {course.tutor?.name || 'LedeX Instructor'} • Lifetime Access</p>
                     <div className="d-flex gap-2">
                        <span className="badge bg-label-primary extra-small">Certificate</span>
                        <span className="badge bg-label-info extra-small">24/7 Support</span>

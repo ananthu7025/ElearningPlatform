@@ -59,7 +59,7 @@ export default function StudentNavbar() {
                 </svg>
               </span>
             </span>
-            <span className="app-brand-text demo menu-text fw-bold text-heading ms-2">LexEd</span>
+            <span className="app-brand-text demo menu-text fw-bold text-heading ms-2">LedeX</span>
           </Link>
         </div>
 

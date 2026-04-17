@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(ls \"c:/Users/Anathapadmanabhan/Desktop/ElearningPlatform/app/\\(admin\\)/admin/practice-lab/[moduleId]/scenarios/\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(ls -la \"app/\\(public\\)/\")",
+      "Bash(timeout 30 npm run dev)",
+      "Bash(xargs head -50)",
+      "Bash(find \"app/\\(public\\)\" -type f -name \"*.tsx\")"
     ]
   }
 }

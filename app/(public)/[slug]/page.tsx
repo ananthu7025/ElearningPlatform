@@ -136,7 +136,7 @@ export default function PublicInstitutePage() {
 
       {/* Footer */}
       <footer className="text-center py-4 text-muted small border-top">
-        Powered by <strong>LexEd</strong>
+        Powered by <strong>LedeX</strong>
       </footer>
     </div>
   )

@@ -20,7 +20,7 @@ export function welcomeAdminEmail(params: WelcomeAdminParams): { subject: string
     </div>
 
     <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:${colors.TEXT_HEAD};text-align:center;">
-      Welcome to LexEd, ${adminName}!
+      Welcome to LedeX, ${adminName}!
     </h1>
     <p style="margin:0 0 28px;font-size:15px;color:${colors.TEXT_MAIN};text-align:center;line-height:1.6;">
       Your institute <strong>${instituteName}</strong> has been successfully onboarded.<br/>
@@ -76,7 +76,7 @@ export function welcomeAdminEmail(params: WelcomeAdminParams): { subject: string
   `
 
   return {
-    subject: `Welcome to LexEd — Your institute "${instituteName}" is live`,
-    html: baseLayout(content, `Your LexEd admin credentials for ${instituteName}`),
+    subject: `Welcome to LedeX — Your institute "${instituteName}" is live`,
+    html: baseLayout(content, `Your LedeX admin credentials for ${instituteName}`),
   }
 }

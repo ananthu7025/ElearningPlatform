@@ -57,12 +57,12 @@ export async function processCertificate(job: Job<CertificateJobData>) {
 
   // Details
   const date = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
-  page.drawText(`Instructor: ${course.tutor?.name ?? 'LexEd'}`, { x: 60, y: height - 340, size: 12, font: fontRegular, color: rgb(0.5, 0.5, 0.5) })
+  page.drawText(`Instructor: ${course.tutor?.name ?? 'LedeX'}`, { x: 60, y: height - 340, size: 12, font: fontRegular, color: rgb(0.5, 0.5, 0.5) })
   page.drawText(`Institute: ${course.institute.name}`, { x: 60, y: height - 360, size: 12, font: fontRegular, color: rgb(0.5, 0.5, 0.5) })
   page.drawText(`Date: ${date}`, { x: 60, y: height - 380, size: 12, font: fontRegular, color: rgb(0.5, 0.5, 0.5) })
 
   // Footer
-  page.drawText('LexEd — Law Exam Preparation Platform', { x: 60, y: 30, size: 10, font: fontRegular, color: rgb(0.6, 0.6, 0.6) })
+  page.drawText('LedeX — Law Exam Preparation Platform', { x: 60, y: 30, size: 10, font: fontRegular, color: rgb(0.6, 0.6, 0.6) })
 
   const pdfBytes = await pdfDoc.save()
 

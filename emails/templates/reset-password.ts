@@ -21,7 +21,7 @@ export function resetPasswordEmail(params: ResetPasswordParams): { subject: stri
       Reset Your Password
     </h1>
     <p style="margin:0 0 28px;font-size:15px;color:${colors.TEXT_MAIN};text-align:center;line-height:1.6;">
-      Hi ${userName}, we received a request to reset your LexEd password.<br/>
+      Hi ${userName}, we received a request to reset your LedeX password.<br/>
       Click the button below to choose a new one.
     </p>
 
@@ -61,7 +61,7 @@ export function resetPasswordEmail(params: ResetPasswordParams): { subject: stri
   `
 
   return {
-    subject: 'Reset your LexEd password',
-    html: baseLayout(content, 'You requested a password reset for your LexEd account'),
+    subject: 'Reset your LedeX password',
+    html: baseLayout(content, 'You requested a password reset for your LedeX account'),
   }
 }

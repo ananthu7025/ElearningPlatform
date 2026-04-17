@@ -51,7 +51,7 @@ export default function TutorSidebar() {
               </svg>
             </span>
           </span>
-          <span className="app-brand-text demo menu-text fw-bold ms-3">LexEd</span>
+          <span className="app-brand-text demo menu-text fw-bold ms-3">LedeX</span>
         </Link>
         <a href="#" onClick={(e) => { e.preventDefault(); toggleMenu() }} className="layout-menu-toggle menu-link text-large ms-auto">
           <i className="icon-base ti tabler-x d-block d-xl-none" />

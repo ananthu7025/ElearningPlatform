@@ -247,7 +247,7 @@ export default function PublicCourseDetailPage() {
       </div>
 
       <footer className="text-center py-4 text-muted small border-top">
-        Powered by <strong>LexEd</strong>
+        Powered by <strong>LedeX</strong>
       </footer>
     </div>
   )

@@ -3,12 +3,12 @@ import { Resend } from 'resend'
 import type { EmailJobData } from '../queues'
 
 const resend = new Resend(process.env.RESEND_API_KEY!)
-const FROM   = 'LexEd <noreply@lexed.in>'
+const FROM   = 'LedeX <noreply@lexed.in>'
 
 const TEMPLATES: Record<EmailJobData['type'], (payload: Record<string, any>, name: string) => { subject: string; html: string }> = {
   enrollment_confirm: (p, name) => ({
     subject: `You're enrolled in ${p.courseTitle}`,
-    html: `<h2>Welcome, ${name}!</h2><p>You're now enrolled in <strong>${p.courseTitle}</strong>. Start learning at <a href="${p.courseUrl}">LexEd</a>.</p>`,
+    html: `<h2>Welcome, ${name}!</h2><p>You're now enrolled in <strong>${p.courseTitle}</strong>. Start learning at <a href="${p.courseUrl}">LedeX</a>.</p>`,
   }),
   assignment_graded: (p, name) => ({
     subject: `Assignment graded — ${p.courseTitle}`,

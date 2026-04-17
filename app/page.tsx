@@ -1,6 +1,5 @@
-import { redirect } from 'next/navigation'
+import LandingPage from '@/components/landing/landing-page'
 
-// Root redirects to login — actual routing is handled by middleware.ts
 export default function Home() {
-  redirect('/login')
+  return <LandingPage />
 }

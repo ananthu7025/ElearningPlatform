@@ -59,7 +59,7 @@ export default function CourseBrowsePage() {
             key: data.keyId,
             amount: data.amount,
             currency: data.currency,
-            name: 'LexEd Learning',
+            name: 'LedeX Learning',
             description: 'Course Enrollment',
             order_id: data.orderId,
             handler: async (response: any) => {

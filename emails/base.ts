@@ -3,7 +3,7 @@
  * Brand color and app name are pulled from env so they work across environments.
  */
 
-const APP_NAME  = 'LexEd'
+const APP_NAME  = 'LedeX'
 const PRIMARY   = '#7367F0'
 const BG_BODY   = '#F4F5FA'
 const BG_CARD   = '#FFFFFF'

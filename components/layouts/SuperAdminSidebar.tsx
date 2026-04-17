@@ -30,7 +30,7 @@ export default function SuperAdminSidebar() {
               </svg>
             </span>
           </span>
-          <span className="app-brand-text demo menu-text fw-bold ms-3">LexEd</span>
+          <span className="app-brand-text demo menu-text fw-bold ms-3">LedeX</span>
         </Link>
         <a
           href="#"

@@ -57,7 +57,7 @@ export default function LoginPage() {
     <div className="authentication-wrapper authentication-cover">
       {/* Logo */}
       <Link href="/" className="app-brand auth-cover-brand gap-2">
-        <span className="app-brand-text demo text-heading fw-bold">LexEd</span>
+        <span className="app-brand-text demo text-heading fw-bold">LedeX</span>
       </Link>
 
       <div className="authentication-inner row m-0">
@@ -83,7 +83,7 @@ export default function LoginPage() {
         {/* Right — login form */}
         <div className="d-flex col-12 col-xl-4 align-items-center authentication-bg p-sm-12 p-6">
           <div className="w-px-400 mx-auto mt-12 pt-5">
-            <h4 className="mb-1">Welcome to LexEd! 👋</h4>
+            <h4 className="mb-1">Welcome to LedeX! 👋</h4>
             <p className="mb-6">Please sign-in to your account and start the adventure</p>
 
             {serverError && (

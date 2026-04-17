@@ -3,6 +3,7 @@ import { verifyAccessToken } from '@/lib/jwt'
 
 // Paths that skip auth entirely
 const PUBLIC_PATHS = [
+  '/',
   '/login',
   '/forgot-password',
   '/reset-password',

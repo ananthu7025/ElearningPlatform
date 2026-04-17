@@ -179,7 +179,7 @@ export default function QuizLessonPage() {
        <div className="sticky-top bg-white border-bottom shadow-sm d-flex align-items-center gap-4 px-4" style={{ height: 64, zIndex: 100 }}>
           <div className="d-flex align-items-center gap-2">
              <div className="avatar avatar-xs rounded bg-primary d-flex align-items-center justify-content-center"><span className="text-white fw-bold extra-small">L</span></div>
-             <span className="fw-bold text-heading">LexEd</span>
+             <span className="fw-bold text-heading">LedeX</span>
           </div>
           <div className="vr h-50 mx-2"></div>
           <div className="flex-grow-1 overflow-hidden">

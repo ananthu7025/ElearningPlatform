@@ -58,7 +58,7 @@ export default function CertificatesPage() {
                   </div>
                   <h6 className="mb-1">{c.course.title}</h6>
                   <small className="text-body-secondary d-block mb-4">
-                    Instructor: {c.course.tutor?.name ?? 'LexEd'}
+                    Instructor: {c.course.tutor?.name ?? 'LedeX'}
                     {c.completedAt && (
                       <span className="d-block">
                         Completed {new Date(c.completedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}

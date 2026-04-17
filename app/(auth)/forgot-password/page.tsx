@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
           {/* Logo */}
           <div className="d-flex align-items-center gap-2 mb-4">
             <span className="fs-3">⚖️</span>
-            <span className="fw-bold fs-4 text-primary">LexEd</span>
+            <span className="fw-bold fs-4 text-primary">LedeX</span>
           </div>
 
           {submitted ? (
