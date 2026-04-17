@@ -3,12 +3,55 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 
 const primary = '#7367F0'
 
 export default function LandingPage() {
+  const router = useRouter()
   const [expandedFaq, setExpandedFaq] = useState(-1)
   const [pricingPeriod, setPricingPeriod] = useState('monthly')
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' })
+  const [formSubmitting, setFormSubmitting] = useState(false)
+
+  const handlePricingButtonClick = (planName: string) => {
+    if (planName === 'Enterprise') {
+      // For enterprise, scroll to contact form
+      document.getElementById('landingContact')?.scrollIntoView({ behavior: 'smooth' })
+    } else {
+      // For other plans, go to login/signup
+      router.push('/login')
+    }
+  }
+
+  const handleFormSubmit = async (e: { preventDefault: () => void }) => {
+    e.preventDefault()
+    setFormSubmitting(true)
+    try {
+      // Call your API endpoint to handle the form submission
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+      if (response.ok) {
+        alert('Thank you! We will get back to you soon.')
+        setFormData({ name: '', email: '', message: '' })
+      } else {
+        alert('Failed to send message. Please try again.')
+      }
+    } catch (error) {
+      console.error('Form submission error:', error)
+      alert('Error sending message. Please try again.')
+    } finally {
+      setFormSubmitting(false)
+    }
+  }
+
+  const handleFormChange = (e: { target: { name: any; value: any } }) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
 
   return (
     <div>
@@ -812,7 +855,9 @@ export default function LandingPage() {
                       ))}
                     </ul>
 
-                    <button className={`btn w-100 fw-semibold ${plan.featured ? 'btn-primary' : 'btn-outline-secondary'}`}>
+                    <button
+                      onClick={() => handlePricingButtonClick(plan.name)}
+                      className={`btn w-100 fw-semibold ${plan.featured ? 'btn-primary' : 'btn-outline-secondary'}`}>
                       {plan.name === 'Enterprise' ? 'Contact Sales' : 'Get Started'}
                     </button>
                   </div>
@@ -889,22 +934,52 @@ export default function LandingPage() {
                     Have questions about our platform, pricing, or implementation?<br className="d-none d-lg-block" />
                     Get in touch with our team today.
                   </p>
-                  <form>
+                  <form onSubmit={handleFormSubmit}>
                     <div className="row g-4">
                       <div className="col-md-6">
                         <label className="form-label">Full Name</label>
-                        <input type="text" className="form-control" placeholder="john" />
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="john"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleFormChange}
+                          required
+                        />
                       </div>
                       <div className="col-md-6">
                         <label className="form-label">Email</label>
-                        <input type="text" className="form-control" placeholder="johndoe@gmail.com" />
+                        <input
+                          type="email"
+                          className="form-control"
+                          placeholder="johndoe@gmail.com"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleFormChange}
+                          required
+                        />
                       </div>
                       <div className="col-12">
                         <label className="form-label">Message</label>
-                        <textarea className="form-control" rows={7} placeholder="Write a message"></textarea>
+                        <textarea
+                          className="form-control"
+                          rows={7}
+                          placeholder="Write a message"
+                          name="message"
+                          value={formData.message}
+                          onChange={handleFormChange}
+                          required
+                        ></textarea>
                       </div>
                       <div className="col-12">
-                        <button type="submit" className="btn btn-primary">Send inquiry</button>
+                        <button
+                          type="submit"
+                          className="btn btn-primary"
+                          disabled={formSubmitting}
+                        >
+                          {formSubmitting ? 'Sending...' : 'Send inquiry'}
+                        </button>
                       </div>
                     </div>
                   </form>
@@ -1015,25 +1090,25 @@ export default function LandingPage() {
             <div className="col-lg-3 col-md-6">
               <h6 style={{ color: '#fff', fontWeight: 600, marginBottom: 16 }}>Product</h6>
               <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li style={{ marginBottom: 8 }}><a href="#landingFeatures" style={{ color: '#94a3b8', textDecoration: 'none' }}>Features</a></li>
-                <li style={{ marginBottom: 8 }}><a href="#landingPricing" style={{ color: '#94a3b8', textDecoration: 'none' }}>Pricing</a></li>
-                <li><a href="#" style={{ color: '#94a3b8', textDecoration: 'none' }}>Security</a></li>
+                <li style={{ marginBottom: 8 }}><a href="#landingFeatures" style={{ color: '#94a3b8', textDecoration: 'none', cursor: 'pointer' }}>Features</a></li>
+                <li style={{ marginBottom: 8 }}><a href="#landingPricing" style={{ color: '#94a3b8', textDecoration: 'none', cursor: 'pointer' }}>Pricing</a></li>
+                <li><a href="#" onClick={(e) => { e.preventDefault(); }} style={{ color: '#94a3b8', textDecoration: 'none', cursor: 'pointer' }}>Security</a></li>
               </ul>
             </div>
             <div className="col-lg-3 col-md-6">
               <h6 style={{ color: '#fff', fontWeight: 600, marginBottom: 16 }}>Company</h6>
               <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li style={{ marginBottom: 8 }}><a href="#" style={{ color: '#94a3b8', textDecoration: 'none' }}>About</a></li>
-                <li style={{ marginBottom: 8 }}><a href="#" style={{ color: '#94a3b8', textDecoration: 'none' }}>Blog</a></li>
-                <li><a href="#" style={{ color: '#94a3b8', textDecoration: 'none' }}>Contact</a></li>
+                <li style={{ marginBottom: 8 }}><a href="#" onClick={(e) => { e.preventDefault(); }} style={{ color: '#94a3b8', textDecoration: 'none', cursor: 'pointer' }}>About</a></li>
+                <li style={{ marginBottom: 8 }}><a href="#" onClick={(e) => { e.preventDefault(); }} style={{ color: '#94a3b8', textDecoration: 'none', cursor: 'pointer' }}>Blog</a></li>
+                <li><a href="#landingContact" style={{ color: '#94a3b8', textDecoration: 'none', cursor: 'pointer' }}>Contact</a></li>
               </ul>
             </div>
             <div className="col-lg-3 col-md-6">
               <h6 style={{ color: '#fff', fontWeight: 600, marginBottom: 16 }}>Legal</h6>
               <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li style={{ marginBottom: 8 }}><a href="#" style={{ color: '#94a3b8', textDecoration: 'none' }}>Privacy</a></li>
-                <li style={{ marginBottom: 8 }}><a href="#" style={{ color: '#94a3b8', textDecoration: 'none' }}>Terms</a></li>
-                <li><a href="#" style={{ color: '#94a3b8', textDecoration: 'none' }}>Cookies</a></li>
+                <li style={{ marginBottom: 8 }}><a href="#" onClick={(e) => { e.preventDefault(); }} style={{ color: '#94a3b8', textDecoration: 'none', cursor: 'pointer' }}>Privacy</a></li>
+                <li style={{ marginBottom: 8 }}><a href="#" onClick={(e) => { e.preventDefault(); }} style={{ color: '#94a3b8', textDecoration: 'none', cursor: 'pointer' }}>Terms</a></li>
+                <li><a href="#" onClick={(e) => { e.preventDefault(); }} style={{ color: '#94a3b8', textDecoration: 'none', cursor: 'pointer' }}>Cookies</a></li>
               </ul>
             </div>
           </div>
@@ -1041,9 +1116,9 @@ export default function LandingPage() {
             <div className="d-flex justify-content-between align-items-center flex-wrap">
               <p style={{ margin: 0, fontSize: '0.875rem' }}>© 2025 LedX. All rights reserved.</p>
               <div style={{ display: 'flex', gap: 24, marginTop: 16 }}>
-                <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>Twitter</a>
-                <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>LinkedIn</a>
-                <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}>GitHub</a>
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', cursor: 'pointer' }}>Twitter</a>
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', cursor: 'pointer' }}>LinkedIn</a>
+                <a href="https://github.com" target="_blank" rel="noopener noreferrer" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', cursor: 'pointer' }}>GitHub</a>
               </div>
             </div>
           </div>
